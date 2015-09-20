@@ -1,6 +1,9 @@
 package com.saladmuffin.leagueapi;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -10,11 +13,11 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -26,25 +29,28 @@ public class RiotAPIPuller {
     private ConnectivityManager connMgr;
     private NetworkInfo networkInfo;
     private TextView resultView;
+    private String currName;
+    private Context currContext;
 
     public RiotAPIPuller (Context context) {
         connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         networkInfo = connMgr.getActiveNetworkInfo();
+        currContext = context;
     }
 
-    public void getSummonerInfo(String name, TextView view) {
-        resultView = view;
+    public void getSummonerInfo(String name) {
+        currName = name;
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadWebpageTask().execute(summonerNameUrl(name));
+            new DownloadSummonerDetails().execute(summonerNameUrl(name));
         } else {
             resultView.setText("No network connection available");
         }
     }
 
-    public void getMatchHistory(Integer summonerId, TextView view) {
+    public void getMatchHistory(Integer summonerId, TextView view, MatchHistory history) {
         resultView = view;
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadWebpageTask().execute(matchHistoryUrl(summonerId));
+            new DownloadMatchHistory(history).execute(matchHistoryUrl(summonerId));
         } else {
             resultView.setText("No network connection available");
         }
@@ -61,7 +67,7 @@ public class RiotAPIPuller {
         return "https://euw.api.pvp.net/api/lol/euw/v2.2/matchhistory/" + summonerId + "?api_key=817c2c76-73f9-4c53-801f-d4e06c88768f";
     }
 
-    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+    private class DownloadSummonerDetails extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
 
@@ -76,6 +82,65 @@ public class RiotAPIPuller {
         @Override
         protected void onPostExecute(String result) {
             resultView.setText(result);
+            try {
+                JSONObject jObject = new JSONObject(result);
+                jObject = jObject.getJSONObject(currName.toLowerCase());
+                int id = jObject.getInt("id");
+                String name = jObject.getString("name");
+                addSummoner(name, id);
+            } catch (JSONException e) {
+                Log.e("MY_ERRORS", "JSON Exception in OnPostExecute: " + e.getLocalizedMessage());
+            }
+        }
+    }
+
+    private class DownloadMatchHistory extends AsyncTask<String, Void, String> {
+        MatchHistory history;
+
+        private DownloadMatchHistory(MatchHistory history) {
+            this.history = history;
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                return downloadUrl(urls[0]);
+            } catch (IOException e) {
+                return "Unable to retrieve web page. URL may be invalid.";
+            }
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            resultView.setText(result);
+            history.parseResponse(result);
+        }
+    }
+
+    public void addSummoner(String name, Integer id) {
+
+        SummonerFetcherDbHelper mDbHelper = new SummonerFetcherDbHelper(currContext);
+
+        // Gets the data repository in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        Cursor mCursor = db.rawQuery("SELECT * FROM " + SummonerDB.SummonerEntry.TABLE_NAME + " WHERE   " + SummonerDB.SummonerEntry.COLUMN_NAME_NAME + "='" + name + "'", null);
+
+        if (mCursor.getCount() == 0) {
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            values.put(SummonerDB.SummonerEntry.COLUMN_NAME_SUMMONER_ID, id);
+            values.put(SummonerDB.SummonerEntry.COLUMN_NAME_NAME, name);
+
+            // Insert the new row, returning the primary key value of the new row
+            long newRowId;
+            newRowId = db.insert(
+                    SummonerDB.SummonerEntry.TABLE_NAME,
+                    "null",
+                    values);
+            Log.d("MY_ERRORS", "added Summoner at row " + newRowId);
         }
     }
 
@@ -86,7 +151,6 @@ public class RiotAPIPuller {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
         // web page content.
-        int len = 500;
 
         try {
             URL url = new URL(myurl);
@@ -100,7 +164,7 @@ public class RiotAPIPuller {
             is = conn.getInputStream();
 
             // Convert the InputStream into a string
-            String contentAsString = readIt(is, len);
+            String contentAsString = readIt(is);
             return contentAsString;
 
             // Makes sure that the InputStream is closed after the app is
@@ -113,13 +177,18 @@ public class RiotAPIPuller {
     }
 
     // Reads an InputStream and converts it to a String.
-    public String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
-        Reader reader = null;
-        reader = new InputStreamReader(stream, "UTF-8");
-        char[] buffer = new char[len];
-        reader.read(buffer);
-        return new String(buffer);
-    }
+    public String readIt(InputStream stream) throws IOException {
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        byte[] buf = new byte[4096];
+        while(true) {
+            int n = stream.read(buf);
+            if( n < 0 ) break;
+            baos.write(buf,0,n);
+        }
+
+        return baos.toString();
+    }
 
 }
