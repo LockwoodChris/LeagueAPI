@@ -8,7 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,8 +15,6 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -28,7 +25,6 @@ public class RiotAPIPuller {
 
     private ConnectivityManager connMgr;
     private NetworkInfo networkInfo;
-    private TextView resultView;
     private String currName;
     private Context currContext;
 
@@ -42,19 +38,21 @@ public class RiotAPIPuller {
         currName = name;
         if (networkInfo != null && networkInfo.isConnected()) {
             new DownloadSummonerDetails().execute(summonerNameUrl(name));
-        } else {
-            resultView.setText("No network connection available");
         }
     }
 
-    public void getMatchHistory(Integer summonerId, TextView view, MatchHistory history) {
-        resultView = view;
+    public void getMatchHistory(Integer summonerId, MatchHistory history) {
         if (networkInfo != null && networkInfo.isConnected()) {
             new DownloadMatchHistory(history).execute(matchHistoryUrl(summonerId));
-        } else {
-            resultView.setText("No network connection available");
         }
     }
+
+    public void getChampionInfo(Integer id, Match match) {
+        if (networkInfo != null && networkInfo.isConnected()) {
+            new DownloadChampionDetails(match).execute(championNameUrl(id));
+        }
+    }
+
 
 
     /* PRIVATE METHODS */
@@ -65,6 +63,10 @@ public class RiotAPIPuller {
 
     private String matchHistoryUrl(Integer summonerId) {
         return "https://euw.api.pvp.net/api/lol/euw/v2.2/matchhistory/" + summonerId + "?api_key=817c2c76-73f9-4c53-801f-d4e06c88768f";
+    }
+
+    private String championNameUrl(Integer id) {
+        return "https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/" + id + "?&api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
     private class DownloadSummonerDetails extends AsyncTask<String, Void, String> {
@@ -81,7 +83,6 @@ public class RiotAPIPuller {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            resultView.setText(result);
             try {
                 JSONObject jObject = new JSONObject(result);
                 jObject = jObject.getJSONObject(currName.toLowerCase());
@@ -114,8 +115,31 @@ public class RiotAPIPuller {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            resultView.setText(result);
-            history.parseResponse(result);
+            history.parseMatchResponse(result);
+        }
+    }
+
+    private class DownloadChampionDetails extends AsyncTask<String, Void, String> {
+        Match match;
+
+        private DownloadChampionDetails(Match match) {
+            this.match = match;
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                return downloadUrl(urls[0]);
+            } catch (IOException e) {
+                return "Unable to retrieve web page. URL may be invalid.";
+            }
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            match.parseChampionResponse(result);
         }
     }
 

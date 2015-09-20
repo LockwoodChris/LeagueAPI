@@ -1,26 +1,14 @@
 package com.saladmuffin.leagueapi;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.TextView;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class SummonerStatisticsActivity extends AppCompatActivity {
 
@@ -31,6 +19,7 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
     private SummonerFetcherDbHelper mDbHelper;
     private int currId;
     private MatchHistory matchHistory;
+    private ListView matchHistoryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,14 +29,15 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         name = intent.getStringExtra(MainActivity.SUMMONER_NAME);
         setTitle(name);
         setContentView(R.layout.activity_summoner_statistics);
-        showJSONView = (TextView) findViewById(R.id.showJSON);
         summonerNameView = (TextView) findViewById(R.id.summonerName);
         summonerNameView.setText(name);
         api = new RiotAPIPuller(this);
         api.getSummonerInfo(name);
         currId = getSummonerId(name);
-        matchHistory = new MatchHistory(currId);
-        api.getMatchHistory(currId,showJSONView,matchHistory);
+        matchHistory = new MatchHistory(currId, this);
+        matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
+        matchHistory.setAdapter(matchHistoryList);
+        api.getMatchHistory(currId, matchHistory);
     }
 
     @Override
@@ -108,5 +98,6 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         }
         return id;
     }
+
 
 }

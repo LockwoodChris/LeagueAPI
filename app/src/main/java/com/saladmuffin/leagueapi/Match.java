@@ -1,5 +1,6 @@
 package com.saladmuffin.leagueapi;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -27,8 +28,17 @@ public class Match {
     private String highestTier;
     private int spell1;
     private int spell2;
+    private String summonerScore;
+    private String championName;
+    private String championTitle;
+    private Context context;
+    private RiotAPIPuller api;
+    private MatchHistory.MatchHistoryAdapter adapter;
 
-    public Match(JSONObject jObject) {
+    public Match(JSONObject jObject, Context context, MatchHistory.MatchHistoryAdapter adapter) {
+        this.adapter = adapter;
+        this.context = context;
+        api = new RiotAPIPuller(context);
         try {
             matchDuration = jObject.getInt("matchDuration");
             matchId = jObject.getInt("matchId");
@@ -36,6 +46,7 @@ public class Match {
             queueType = jObject.getString("queueType");
             JSONObject participants = jObject.getJSONArray("participants").getJSONObject(0);
             championId = participants.getInt("championId");
+            api.getChampionInfo(championId, this);
             highestTier = participants.getString("highestAchievedSeasonTier");
             spell1 = participants.getInt("spell1Id");
             spell2 = participants.getInt("spell2Id");
@@ -47,6 +58,15 @@ public class Match {
             JSONObject playerInfo = jObject.getJSONArray("participantIdentities").getJSONObject(0).getJSONObject("player");
             summonerName = playerInfo.getString("summonerName");
             summonerId = playerInfo.getInt("summonerId");
+            parseStats();
+        } catch (JSONException e) {
+            Log.d("JSON_EXCEPTION", e.getMessage());
+        }
+    }
+
+    private void parseStats() {
+        try {
+            summonerScore = "" + stats.getInt("kills") +"/"+ stats.getInt("deaths") +"/"+  stats.getInt("assists");
         } catch (JSONException e) {
             Log.d("JSON_EXCEPTION", e.getMessage());
         }
@@ -73,4 +93,33 @@ public class Match {
             Log.d("JSON_EXCEPTION", e.getLocalizedMessage());
         }
     }
+
+    public void parseChampionResponse(String response) {
+        try {
+            JSONObject jObject = new JSONObject(response);
+            championName = jObject.getString("name");
+            championTitle = jObject.getString("title");
+            adapter.notifyDataSetChanged();
+        } catch (JSONException e) {
+            Log.d("JSON_EXCEPTION", e.getLocalizedMessage());
+        }
+    }
+
+    /* Accessor Methods */
+    public String getSummonerName() {
+        return summonerName;
+    }
+
+    public String getSummonerScore() {
+        return summonerScore;
+    }
+
+    public String getChampionName() {
+        return championName;
+    }
+
+    public String getChampionTitle() {
+        return championTitle;
+    }
+
 }

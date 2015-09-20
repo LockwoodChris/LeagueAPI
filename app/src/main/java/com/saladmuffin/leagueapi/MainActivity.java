@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
         summonerNames = new ArrayList<String>();
         mDbHelper = new SummonerFetcherDbHelper(this);
         setContentView(R.layout.activity_main);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, summonerNames);
-        adapter.notifyDataSetChanged();
         initialiseSummonerList();
     }
 
@@ -189,6 +187,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialiseSummonerList() {
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, summonerNames);
+        adapter.notifyDataSetChanged();
         ListView listView = (ListView) findViewById(R.id.summonerList);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
