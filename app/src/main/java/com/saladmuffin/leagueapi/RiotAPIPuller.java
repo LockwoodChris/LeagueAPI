@@ -62,7 +62,8 @@ public class RiotAPIPuller {
     }
 
     private String matchHistoryUrl(Integer summonerId) {
-        return "https://euw.api.pvp.net/api/lol/euw/v2.2/matchhistory/" + summonerId + "?api_key=817c2c76-73f9-4c53-801f-d4e06c88768f";
+        Log.e("ASDASDASD", ""+summonerId);
+        return "https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/" + summonerId + "/recent?api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
     private String championNameUrl(Integer id) {
@@ -77,7 +78,7 @@ public class RiotAPIPuller {
             try {
                 return downloadUrl(urls[0]);
             } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
+                return "Unable to retrieve web page. URL may be invalid. IN DownloadSummonerDetails";
             }
         }
         // onPostExecute displays the results of the AsyncTask.
@@ -109,13 +110,13 @@ public class RiotAPIPuller {
             try {
                 return downloadUrl(urls[0]);
             } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
+                return "Unable to retrieve web page. URL may be invalid. IN DownloadMatchHistory";
             }
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            history.parseMatchResponse(result);
+            history.parseMatchResponse(result, currName);
         }
     }
 
@@ -133,7 +134,7 @@ public class RiotAPIPuller {
             try {
                 return downloadUrl(urls[0]);
             } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
+                return "Unable to retrieve web page. URL may be invalid. IN DownloadChampionsDetails";
             }
         }
         // onPostExecute displays the results of the AsyncTask.
@@ -203,16 +204,16 @@ public class RiotAPIPuller {
     // Reads an InputStream and converts it to a String.
     public String readIt(InputStream stream) throws IOException {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         byte[] buf = new byte[4096];
         while(true) {
             int n = stream.read(buf);
             if( n < 0 ) break;
-            baos.write(buf,0,n);
+            outputStream.write(buf, 0, n);
         }
 
-        return baos.toString();
+        return outputStream.toString();
     }
 
 }

@@ -5,12 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -30,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText summonerNameView;
     private ArrayList<String> summonerNames;
-    private ArrayAdapter<String> adapter;
+    private SummonerListCursorAdapter adapter;
     private SummonerFetcherDbHelper mDbHelper;
 
     @Override
@@ -130,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openSummonerStatistics(String name) {
+        RiotAPIPuller api = new RiotAPIPuller(this);
+        api.getSummonerInfo(name);
         Intent intent = new Intent(this, SummonerStatisticsActivity.class);
         intent.putExtra(SUMMONER_NAME, name);
         startActivity(intent);
@@ -187,18 +192,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialiseSummonerList() {
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, summonerNames);
-        adapter.notifyDataSetChanged();
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor sumListCursor = db.rawQuery("SELECT   *  from " + SummonerDB.SummonerEntry.TABLE_NAME, null);
+        adapter = new SummonerListCursorAdapter(this, sumListCursor);
         ListView listView = (ListView) findViewById(R.id.summonerList);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("MY_ERRORS", "before openSummonerStatistics");
-                openSummonerStatistics(((TextView) view).getText().toString());
+                openSummonerStatistics(((TextView) view.findViewById(R.id.summonerListItemName)).getText().toString());
                 Log.d("MY_ERRORS", "after openSummonerStatistics");
             }
         });
+    }
+
+    private class SummonerListCursorAdapter extends CursorAdapter {
+        private SummonerListCursorAdapter(Context context, Cursor c) {
+            super(context, c, 0);
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return LayoutInflater.from(context).inflate(R.layout.summoner_list_item, parent, false);
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            // Find fields to populate in inflated template
+            TextView tvName = (TextView) view.findViewById(R.id.summonerListItemName);
+            // Extract properties from cursor
+            String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+            // Populate fields with extracted properties
+            tvName.setText(String.valueOf(name));
+        }
     }
 
 }

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -27,16 +28,15 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         mDbHelper = new SummonerFetcherDbHelper(this);
         Intent intent = getIntent();
         name = intent.getStringExtra(MainActivity.SUMMONER_NAME);
+        api = new RiotAPIPuller(this);
         setTitle(name);
         setContentView(R.layout.activity_summoner_statistics);
         summonerNameView = (TextView) findViewById(R.id.summonerName);
         summonerNameView.setText(name);
-        api = new RiotAPIPuller(this);
-        api.getSummonerInfo(name);
-        currId = getSummonerId(name);
         matchHistory = new MatchHistory(currId, this);
         matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
         matchHistory.setAdapter(matchHistoryList);
+        currId = getSummonerId(name);
         api.getMatchHistory(currId, matchHistory);
     }
 
