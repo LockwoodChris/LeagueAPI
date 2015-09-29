@@ -167,6 +167,7 @@ public class RiotAPIPuller {
                     values);
             Log.d("MY_ERRORS", "added Summoner at row " + newRowId);
         }
+        db.close();
     }
 
     // Given a URL, establishes an HttpUrlConnection and retrieves

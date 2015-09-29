@@ -30,6 +30,8 @@ public class MatchDB {
         public static final String COLUMN_NAME_GOLD = "gold";
         public static final String COLUMN_NAME_MINIONS = "minions";
         public static final String COLUMN_NAME_MATCH_ID = "matchId";
+        public static final String COLUMN_NAME_CHAMPION_NAME = "championName";
+        public static final String COLUMN_NAME_CHAMPION_TITLE = "championTitle";
     }
 
 
@@ -55,7 +57,9 @@ public class MatchDB {
                     MatchEntry.COLUMN_NAME_ASSISTS + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_GOLD + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE +
+                    MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_CHAMPION_NAME + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_CHAMPION_TITLE + TEXT_TYPE +
                     " )";
 
     public static final String SQL_DELETE_ENTRIES =

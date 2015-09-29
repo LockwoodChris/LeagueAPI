@@ -1,9 +1,12 @@
 package com.saladmuffin.leagueapi;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.v4.widget.CursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,19 +30,25 @@ import java.util.ArrayList;
 public class MatchHistory {
 
     private int summonerId;
-    private ArrayList<Match> matchList;
     private MatchHistoryAdapter adapter;
     private Context context;
 
     public MatchHistory(int summonerId, Context context) {
         this.context = context;
         this.summonerId = summonerId;
-        matchList = new ArrayList<>();
     }
 
     public void setAdapter(ListView matchHistoryList) {
-        adapter = new MatchHistoryAdapter(context, matchList);
+        MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT   * FROM " + MatchDB.MatchEntry.TABLE_NAME, null);
+        adapter = new MatchHistoryAdapter(context, c);
         matchHistoryList.setAdapter(adapter);
+        db.close();
+    }
+
+    public MatchHistoryAdapter getAdapter() {
+        return adapter;
     }
 
     public void parseMatchResponse(String responseStr, String summonerName) {
@@ -49,47 +58,52 @@ public class MatchHistory {
             JSONArray jArray = response.getJSONArray("games");
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject jObject = jArray.getJSONObject(i);
-                Match match = new Match(jObject, context, adapter, summonerName, summonerId);
-                adapter.add(match);
+                new Match(jObject, context, adapter, summonerName, summonerId);
             }
         } catch (JSONException e) {
             Log.d("MatchHistory", e.getLocalizedMessage());
         }
     }
 
-    public class MatchHistoryAdapter extends ArrayAdapter<Match> {
+    public class MatchHistoryAdapter extends CursorAdapter {
 
-        public MatchHistoryAdapter(Context context, ArrayList<Match> matches) {
-            super(context, 0, matches);
+        public MatchHistoryAdapter(Context context, Cursor cursor) {
+            super(context, cursor, 0);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Match match = getItem(position);
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return LayoutInflater.from(context).inflate(R.layout.match_history_list_item, parent, false);
+        }
 
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.match_history_list_item, parent, false);
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+
+            TextView tChampionName = (TextView) view.findViewById(R.id.matchChampionName);
+            TextView tSummonerTitle = (TextView) view.findViewById(R.id.matchSummonerTitle);
+            TextView tSummonerScore = (TextView) view.findViewById(R.id.matchSummonerScore);
+            TextView tSummonerGold = (TextView) view.findViewById(R.id.matchSummonerGold);
+            TextView tSummonerCreeps = (TextView) view.findViewById(R.id.matchSummonerCreeps);
+            TextView tSummonerDuration = (TextView) view.findViewById(R.id.matchSummonerDuration);
+            ImageView championImage = (ImageView) view.findViewById((R.id.matchImage));
+
+            int id = cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_NAME);
+            if (id != -1) {
+                String champName = cursor.getString(id);
+                if (champName != null) {
+                    tChampionName.setText(champName + ", ");
+                    new DownloadChampionImage(championImage, champName).execute();
+                }
+                tSummonerTitle.setText(cursor.getString(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_TITLE)));
             }
-
-            TextView tChampionName = (TextView) convertView.findViewById(R.id.matchChampionName);
-            TextView tSummonerTitle = (TextView) convertView.findViewById(R.id.matchSummonerTitle);
-            TextView tSummonerScore = (TextView) convertView.findViewById(R.id.matchSummonerScore);
-            TextView tSummonerGold = (TextView) convertView.findViewById(R.id.matchSummonerGold);
-            TextView tSummonerCreeps = (TextView) convertView.findViewById(R.id.matchSummonerCreeps);
-            TextView tSummonerDuration = (TextView) convertView.findViewById(R.id.matchSummonerDuration);
-            ImageView championImage = (ImageView) convertView.findViewById((R.id.matchImage));
-
-            String champName = match.getChampionName();
-            if (champName != null) {
-                tChampionName.setText(champName + ", ");
-                new DownloadChampionImage(championImage, champName).execute();
-            }
-            tSummonerTitle.setText(match.getChampionTitle());
-            tSummonerScore.setText(match.getSummonerScore());
-            tSummonerGold.setText(", "+match.getSummonerGold()+"G");
-            tSummonerCreeps.setText(", "+match.getSummonerCreeps()+ "cs");
-            tSummonerDuration.setText(", "+match.getSummonerDuration());
-            return convertView;
+            int kills = cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_KILLS));
+            int deaths = cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_DEATHS));
+            int assists = cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ASSISTS));
+            tSummonerScore.setText("" + kills +"/"+ deaths +"/"+ assists);
+            tSummonerGold.setText(", "+ cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_GOLD)) +"G");
+            tSummonerCreeps.setText(", "+ cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MINIONS)) + "cs");
+            int duration = cursor.getInt(cursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION));
+            tSummonerDuration.setText(", " + duration / 60 + "mins, " + duration % 60 + "secs ");
         }
 
         private class DownloadChampionImage extends AsyncTask<Void,Void,Void> {

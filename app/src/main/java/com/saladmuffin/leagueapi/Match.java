@@ -89,7 +89,7 @@ public class Match {
             JSONObject jObject = new JSONObject(response);
             championName = jObject.getString("name");
             championTitle = jObject.getString("title");
-            adapter.notifyDataSetChanged();
+            addMatch();
         } catch (JSONException e) {
             Log.d("JSON_EXCEPTION", e.getLocalizedMessage());
         }
@@ -148,6 +148,8 @@ public class Match {
             values.put(MatchDB.MatchEntry.COLUMN_NAME_ASSISTS, assists);
             values.put(MatchDB.MatchEntry.COLUMN_NAME_GOLD, gold);
             values.put(MatchDB.MatchEntry.COLUMN_NAME_MINIONS, cs);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_NAME, championName);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_TITLE, championTitle);
 
             // Insert the new row, returning the primary key value of the new row
             long newRowId;
@@ -156,7 +158,39 @@ public class Match {
                     "null",
                     values);
             Log.d("MY_ERRORS", "added Match at row " + newRowId);
+        } else {
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_ID, matchId);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_SUMMONER_NAME, championName);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_SUMMONER_ID, summonerId);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_TYPE, matchType);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_SUB_TYPE, matchSubType);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE, matchMode);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION, matchDuration);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MAP_ID, mapId);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_ID, championId);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_TEAM_ID, teamId);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_SPELL_1, spell1);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_SPELL_2, spell2);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_DEATHS, deaths);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_KILLS, kills);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_ASSISTS, assists);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_GOLD, gold);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_MINIONS, cs);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_NAME, championName);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_TITLE, championTitle);
+
+            // Insert the new row, returning the primary key value of the new row
+            long newRowId;
+            newRowId = db.update(
+                    MatchDB.MatchEntry.TABLE_NAME,
+                    values,
+                    "matchId="+matchId,
+                    null);
+            Log.d("MY_ERRORS", "updated Match at row " + newRowId);
         }
+        adapter.notifyDataSetChanged();
         db.close();
     }
 

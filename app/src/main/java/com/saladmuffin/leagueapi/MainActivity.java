@@ -27,6 +27,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/*
+TODO:
+ - Create better downloader class
+ - Cache images
+ - View match details class
+ - Turn summonerStats into fragment and create tabbed view
+ - add different stats
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     public static final String SUMMONER_NAME = "com.saladmuffin.leagueapi.SUMMONER_NAME";
@@ -180,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MY_ERRORS", "adding " + name);
             isNext = c.moveToNext();
         }
+        db.close();
         adapter.notifyDataSetChanged();
     }
 
@@ -187,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MY_ERRORS", "clearing Summoner Database");
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.delete(SummonerDB.SummonerEntry.TABLE_NAME, null, null);
-        summonerNames.clear();
+        db.close();
         adapter.notifyDataSetChanged();
     }
 

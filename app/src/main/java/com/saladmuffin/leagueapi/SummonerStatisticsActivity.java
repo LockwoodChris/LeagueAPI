@@ -31,11 +31,11 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         api = new RiotAPIPuller(this);
         setTitle(name);
         setContentView(R.layout.activity_summoner_statistics);
-        summonerNameView = (TextView) findViewById(R.id.summonerName);
-        summonerNameView.setText(name);
         matchHistory = new MatchHistory(currId, this);
         matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
         matchHistory.setAdapter(matchHistoryList);
+        summonerNameView = (TextView) findViewById(R.id.summonerName);
+        summonerNameView.setText(name);
         currId = getSummonerId(name);
         api.getMatchHistory(currId, matchHistory);
     }
@@ -57,6 +57,9 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+        if (id == R.id.action_clear_matches) {
+            clearMatchDatabase();
         }
 
         return super.onOptionsItemSelected(item);
@@ -96,7 +99,17 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         if (found) {
             id = c.getInt(c.getColumnIndex(SummonerDB.SummonerEntry.COLUMN_NAME_SUMMONER_ID));
         }
+        db.close();
         return id;
+    }
+
+    private void clearMatchDatabase() {
+        Log.d("MY_ERRORS", "clearing Match Database");
+        MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.delete(MatchDB.MatchEntry.TABLE_NAME, null, null);
+        db.close();
+        matchHistory.getAdapter().notifyDataSetChanged();
     }
 
 
