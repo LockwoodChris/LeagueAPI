@@ -13,7 +13,7 @@ public class MatchDB {
     public static abstract class MatchEntry implements BaseColumns {
         public static final String TABLE_NAME = "summoners";
         public static final String COLUMN_NAME_SUMMONER_NAME = "name";
-        public static final String COLUMN_NAME_SUMMONER_ID = "summonerid";
+        public static final String COLUMN_NAME_SUMMONER_ID = "summonerId";
         public static final String COLUMN_NAME_MATCH_TYPE =  "matchType";
         public static final String COLUMN_NAME_MATCH_MODE = "matchMode";
         public static final String COLUMN_NAME_MATCH_SUB_TYPE = "matchSubType";

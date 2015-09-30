@@ -57,7 +57,6 @@ public class Match {
             matchSubType = jObject.getString("subType");
             matchType = jObject.getString("gameType");
             championId = jObject.getInt("championId");
-            api.getChampionInfo(championId, this);
             spell1 = jObject.getInt("spell1");
             spell2 = jObject.getInt("spell2");
             teamId = jObject.getInt("teamId");

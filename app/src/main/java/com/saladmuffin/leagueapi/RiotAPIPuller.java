@@ -24,32 +24,33 @@ import java.net.URL;
 public class RiotAPIPuller {
 
     private ConnectivityManager connMgr;
-    private NetworkInfo networkInfo;
     private String currName;
     private Context currContext;
 
     public RiotAPIPuller (Context context) {
         connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        networkInfo = connMgr.getActiveNetworkInfo();
         currContext = context;
     }
 
     public void getSummonerInfo(String name) {
         currName = name;
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             new DownloadSummonerDetails().execute(summonerNameUrl(name));
         }
     }
 
     public void getMatchHistory(Integer summonerId, MatchHistory history) {
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             new DownloadMatchHistory(history).execute(matchHistoryUrl(summonerId));
         }
     }
 
-    public void getChampionInfo(Integer id, Match match) {
+    public void getChampionInfo(Integer id) {
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadChampionDetails(match).execute(championNameUrl(id));
+            new DownloadChampionDetails().execute(championNameUrl(id));
         }
     }
 
@@ -62,7 +63,6 @@ public class RiotAPIPuller {
     }
 
     private String matchHistoryUrl(Integer summonerId) {
-        Log.e("ASDASDASD", ""+summonerId);
         return "https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/" + summonerId + "/recent?api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
@@ -121,11 +121,6 @@ public class RiotAPIPuller {
     }
 
     private class DownloadChampionDetails extends AsyncTask<String, Void, String> {
-        Match match;
-
-        private DownloadChampionDetails(Match match) {
-            this.match = match;
-        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -140,9 +135,42 @@ public class RiotAPIPuller {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            match.parseChampionResponse(result);
+            addChampion(result);
         }
     }
+
+    public void addChampion(String jsonResult) {
+        try {
+            JSONObject jObject = new JSONObject(jsonResult);
+            String championName = jObject.getString("name");
+            String championTitle = jObject.getString("title");
+            int championId = jObject.getInt("id");
+
+            ChampionFetcherDbHelper mDbHelper = new ChampionFetcherDbHelper(currContext);
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            Cursor mCursor = db.rawQuery("SELECT * FROM " + ChampionDB.ChampionEntry.TABLE_NAME + " WHERE   " + ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_ID + "=" + championId, null);
+
+            if (mCursor.getCount() == 0) {
+                // Create a new map of values, where column names are the keys
+                ContentValues values = new ContentValues();
+                values.put(ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_ID, championId);
+                values.put(ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_NAME, championName);
+                values.put(ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_TITLE, championTitle);
+
+                // Insert the new row, returning the primary key value of the new row
+                long newRowId;
+                newRowId = db.insert(
+                        ChampionDB.ChampionEntry.TABLE_NAME,
+                        "null",
+                        values);
+                Log.d("ChampionDB", "added " + championName + " at row " + newRowId);
+            }
+            db.close();
+        } catch (JSONException e) {
+            Log.e("JSON_EXCEPTION", e.getLocalizedMessage());
+        }
+    }
+
 
     public void addSummoner(String name, Integer id) {
 
@@ -165,7 +193,7 @@ public class RiotAPIPuller {
                     SummonerDB.SummonerEntry.TABLE_NAME,
                     "null",
                     values);
-            Log.d("MY_ERRORS", "added Summoner at row " + newRowId);
+            Log.d("SummonerDB", "added Summoner at row " + newRowId);
         }
         db.close();
     }
