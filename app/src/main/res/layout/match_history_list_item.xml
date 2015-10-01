@@ -1,67 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
-
-
-    <ImageView
-        android:layout_width="120px"
-        android:layout_height="120px"
-        android:id="@+id/matchImage"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:src="@drawable/match_image"
-        />
-
-    <RelativeLayout
-        android:layout_toRightOf="@+id/matchImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+    <LinearLayout android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:id="@+id/matchItemTopBar">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/matchChampionName"/>
-
+            android:id="@+id/matchMode"
+            android:layout_weight="1"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/matchSummonerTitle"
-            android:layout_toRightOf="@id/matchChampionName"/>
+            android:id="@+id/matchResult"
+            android:layout_weight="1"
+            android:gravity="center"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/matchSummonerDuration"
+            android:layout_weight="1"
+            android:gravity="right"/>
+    </LinearLayout>
 
+    <LinearLayout android:layout_height="match_parent"
+                  android:layout_width="match_parent"
+                  android:layout_below="@id/matchItemTopBar"
+                  android:id="@+id/matchItemMiddleBar">
+        <ImageView
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:id="@+id/matchImage"
+            android:src="@drawable/match_image"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="6">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:id="@+id/matchSummonerScore"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:id="@+id/matchSummonerGold"
+                    android:layout_below="@id/matchSummonerScore"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:id="@+id/matchSummonerCreeps"
+                    android:layout_below="@id/matchSummonerGold"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <ImageView
+                    android:layout_width="64px"
+                    android:layout_height="64px"
+                    android:id="@+id/matchSummonerSpell1"
+                    android:src="@drawable/match_image"
+                    android:layout_gravity="top"/>
+                <ImageView
+                    android:layout_width="64px"
+                    android:layout_height="64px"
+                    android:layout_below="@id/matchSummonerSpell1"
+                    android:id="@+id/matchSummonerSpell2"
+                    android:src="@drawable/match_image"/>
+            </RelativeLayout>
+        </LinearLayout>
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/matchChampionName">
-
-            <TextView
+            android:layout_weight="2">
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/matchSummonerScore"/>
-
-            <TextView
+                android:id="@+id/matchItemRow1">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem1"
+                    android:layout_weight="1"
+                    />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem2"
+                    android:layout_weight="1"
+                    />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem3"
+                    android:layout_weight="1"
+                    />
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/matchSummonerGold"
-                android:layout_toRightOf="@id/matchSummonerScore"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/matchSummonerCreeps"
-                android:layout_toRightOf="@id/matchSummonerGold"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:id="@+id/matchSummonerDuration"
-                android:layout_toRightOf="@id/matchSummonerCreeps" />
+                android:layout_below="@id/matchItemRow1">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem4"
+                    android:layout_weight="1"
+                    />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem5"
+                    android:layout_weight="1"
+                    />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchSummonerItem6"
+                    android:layout_weight="1"
+                    />
+            </LinearLayout>
         </RelativeLayout>
-    </RelativeLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/matchItemMiddleBar">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/matchChampionName"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/matchSummonerTitle"
+                android:layout_toRightOf="@id/matchChampionName"/>
+        </RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchCreateDate"
+            android:layout_weight="1"
+            android:gravity="right"/>
+    </LinearLayout>
+
 
 </RelativeLayout>

@@ -29,15 +29,13 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         name = intent.getStringExtra(MainActivity.SUMMONER_NAME);
         api = new RiotAPIPuller(this);
+        currId = getSummonerId(name);
         setTitle(name);
         setContentView(R.layout.activity_summoner_statistics);
         matchHistory = new MatchHistory(currId, this);
         matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
         matchHistory.setAdapter(matchHistoryList);
-        summonerNameView = (TextView) findViewById(R.id.summonerName);
-        summonerNameView.setText(name);
-        currId = getSummonerId(name);
-        api.getMatchHistory(currId, matchHistory);
+        api.getMatchHistory(currId, matchHistory, name);
     }
 
     @Override

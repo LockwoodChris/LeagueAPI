@@ -22,8 +22,10 @@ import java.util.ArrayList;
 
 /*
 TODO:
- - View match details class
+ - Image disk cache? Content Provider?
+ - Fix multiple download tasks
  - Turn summonerStats into fragment and create tabbed view
+ - View match details class
  - add different stats
  */
 

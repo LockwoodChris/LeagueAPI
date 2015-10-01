@@ -4,15 +4,20 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ImageView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -24,7 +29,6 @@ import java.net.URL;
 public class RiotAPIPuller {
 
     private ConnectivityManager connMgr;
-    private String currName;
     private Context currContext;
 
     public RiotAPIPuller (Context context) {
@@ -33,17 +37,16 @@ public class RiotAPIPuller {
     }
 
     public void getSummonerInfo(String name) {
-        currName = name;
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadSummonerDetails().execute(summonerNameUrl(name));
+            new DownloadSummonerDetails().execute(name);
         }
     }
 
-    public void getMatchHistory(Integer summonerId, MatchHistory history) {
+    public void getMatchHistory(Integer summonerId, MatchHistory history, String name) {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadMatchHistory(history).execute(matchHistoryUrl(summonerId));
+            new DownloadMatchHistory(history).execute(matchHistoryUrl(summonerId), name);
         }
     }
 
@@ -54,7 +57,12 @@ public class RiotAPIPuller {
         }
     }
 
-
+    public void downloadSummonerSpellIcon(int iconId, ImageView view) {
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            new DownloadSummonerSpellIcon(view,iconId).execute();
+        }
+    }
 
     /* PRIVATE METHODS */
 
@@ -71,12 +79,15 @@ public class RiotAPIPuller {
     }
 
     private class DownloadSummonerDetails extends AsyncTask<String, Void, String> {
+
+        private String name;
+
         @Override
         protected String doInBackground(String... urls) {
-
+            name = urls[0];
             // params comes from the execute() call: params[0] is the url.
             try {
-                return downloadUrl(urls[0]);
+                return downloadUrl(summonerNameUrl(name));
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid. IN DownloadSummonerDetails";
             }
@@ -86,7 +97,7 @@ public class RiotAPIPuller {
         protected void onPostExecute(String result) {
             try {
                 JSONObject jObject = new JSONObject(result);
-                jObject = jObject.getJSONObject(currName.toLowerCase());
+                jObject = jObject.getJSONObject(name.toLowerCase());
                 int id = jObject.getInt("id");
                 String name = jObject.getString("name");
                 addSummoner(name, id);
@@ -96,8 +107,60 @@ public class RiotAPIPuller {
         }
     }
 
+
+    private class DownloadSummonerSpellIcon extends AsyncTask<Void,Void,String> {
+
+        private ImageView view;
+        private int id;
+        private Bitmap bmp;
+
+        private DownloadSummonerSpellIcon(ImageView view, int id) {
+            this.view = view;
+            this.id = id;
+        }
+
+        @Override
+        protected String doInBackground(Void... urls) {
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                String result = downloadUrl("https://global.api.pvp.net/api/lol/static-data/euw/v1.2/summoner-spell/" + id + "?spellData=image&api_key=fba4693e-ec41-4629-901e-e246d32cfd15");
+                JSONObject jObject = new JSONObject(result).getJSONObject("image");
+                result = jObject.getString("full");
+                Log.d("ASDSAD", result);
+                URL url = new URL("http://ddragon.leagueoflegends.com/cdn/5.19.1/img/spell/" + result);
+                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch (IOException e) {
+                Log.e("IOException", e.getLocalizedMessage() + ", icon with id " + id);
+            } catch (JSONException e) {
+                Log.e("JSONException", e.getLocalizedMessage());
+            }
+            return null;
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                File file = currContext.getFilesDir();
+                file = new File(file.getPath() + "/summonerspells/icons/");
+                file.mkdirs();
+                file = new File(file.getPath() + "/" + id + ".png");
+                FileOutputStream fos = new FileOutputStream(file);
+                //FileOutputStream fos = context.openFileOutput("/champions/icons/" + name + ".png", Context.MODE_PRIVATE);
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                Log.d("MatchHistory", "Downloading summoner spell icon for " + id);
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                Log.e("IOException", e.getLocalizedMessage() + ", icon with id " + id);
+            }
+            view.setImageBitmap(bmp);
+        }
+    }
+
+
     private class DownloadMatchHistory extends AsyncTask<String, Void, String> {
         MatchHistory history;
+        String name;
 
         private DownloadMatchHistory(MatchHistory history) {
             this.history = history;
@@ -105,7 +168,7 @@ public class RiotAPIPuller {
 
         @Override
         protected String doInBackground(String... urls) {
-
+            name = urls[1];
             // params comes from the execute() call: params[0] is the url.
             try {
                 return downloadUrl(urls[0]);
@@ -116,7 +179,7 @@ public class RiotAPIPuller {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            history.parseMatchResponse(result, currName);
+            history.parseMatchResponse(result, name);
         }
     }
 

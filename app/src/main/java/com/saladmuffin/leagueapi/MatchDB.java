@@ -26,12 +26,17 @@ public class MatchDB {
         public static final String COLUMN_NAME_DEATHS = "deaths";
         public static final String COLUMN_NAME_KILLS = "kills";
         public static final String COLUMN_NAME_ASSISTS = "assists";
-        public static final String COLUMN_NAME_TITLE = "title";
         public static final String COLUMN_NAME_GOLD = "gold";
         public static final String COLUMN_NAME_MINIONS = "minions";
         public static final String COLUMN_NAME_MATCH_ID = "matchId";
-        public static final String COLUMN_NAME_CHAMPION_NAME = "championName";
-        public static final String COLUMN_NAME_CHAMPION_TITLE = "championTitle";
+        public static final String COLUMN_NAME_MATCH_RESULT = "matchResult";
+        public static final String COLUMN_NAME_MATCH_START_TIME = "matchStartTime";
+        public static final String COLUMN_NAME_ITEM_1 = "matchItem1";
+        public static final String COLUMN_NAME_ITEM_2 = "matchItem2";
+        public static final String COLUMN_NAME_ITEM_3 = "matchItem3";
+        public static final String COLUMN_NAME_ITEM_4 = "matchItem4";
+        public static final String COLUMN_NAME_ITEM_5 = "matchItem5";
+        public static final String COLUMN_NAME_ITEM_6 = "matchItem6";
     }
 
 
@@ -55,11 +60,16 @@ public class MatchDB {
                     MatchEntry.COLUMN_NAME_DEATHS + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_KILLS + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_ASSISTS + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_GOLD + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_CHAMPION_NAME + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_CHAMPION_TITLE + TEXT_TYPE +
+                    MatchEntry.COLUMN_NAME_MATCH_RESULT + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_MATCH_START_TIME + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_1 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_2 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_3 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_4 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_5 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_6 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE +
                     " )";
 
     public static final String SQL_DELETE_ENTRIES =
