@@ -1,34 +1,24 @@
 package com.saladmuffin.leagueapi;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v4.widget.CursorAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -39,10 +29,12 @@ public class MatchHistory {
     private int summonerId;
     private MatchHistoryAdapter adapter;
     private Context context;
+    private ListView matchHistoryList;
 
-    public MatchHistory(int summonerId, Context context) {
+    public MatchHistory(int summonerId, Context context, ListView matchHistoryList) {
         this.context = context;
         this.summonerId = summonerId;
+        this.matchHistoryList = matchHistoryList;
     }
 
     public void setAdapter(ListView matchHistoryList) {
@@ -56,6 +48,10 @@ public class MatchHistory {
 
     public MatchHistoryAdapter getAdapter() {
         return adapter;
+    }
+
+    public ListView getListView() {
+        return matchHistoryList;
     }
 
     public void parseMatchResponse(String responseStr, String summonerName) {
@@ -104,6 +100,7 @@ public class MatchHistory {
             ImageView ivItem4 = (ImageView) view.findViewById(R.id.matchSummonerItem4);
             ImageView ivItem5 = (ImageView) view.findViewById(R.id.matchSummonerItem5);
             ImageView ivItem6 = (ImageView) view.findViewById(R.id.matchSummonerItem6);
+            ImageView ivItem7 = (ImageView) view.findViewById(R.id.matchSummonerItem7);
             ImageView ivSpell1 = (ImageView) view.findViewById(R.id.matchSummonerSpell1);
             ImageView ivSpell2 = (ImageView) view.findViewById(R.id.matchSummonerSpell2);
 
@@ -114,7 +111,7 @@ public class MatchHistory {
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
             Cursor championCursor = db.rawQuery("SELECT * FROM " + ChampionDB.ChampionEntry.TABLE_NAME + " WHERE " + ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_ID + "='" + champId + "'", null);
             if (championCursor.getCount() == 0) {
-                new RiotAPIPuller(context).getChampionInfo(champId);
+                new RiotAPIPuller(context).getChampionInfo(champId, this);
             } else if (championCursor != null && championCursor.getCount()>0){
                 championCursor.moveToFirst();
                 String champName = championCursor.getString(championCursor.getColumnIndex(ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_NAME));
@@ -128,14 +125,14 @@ public class MatchHistory {
             int deaths = matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_DEATHS));
             int assists = matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ASSISTS));
             tSummonerScore.setText("" + kills +"/"+ deaths +"/"+ assists);
-            tSummonerGold.setText(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_GOLD)) +"G");
-            tSummonerCreeps.setText(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MINIONS)) + "cs");
+            tSummonerGold.setText(matchCursor.getString(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_GOLD)) + "G");
+            tSummonerCreeps.setText(matchCursor.getString(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MINIONS)) + "cs");
             tMatchMode.setText(matchCursor.getString(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE)));
             int win = matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_RESULT));
             if (win == 1) tMatchResult.setText("Victory");
             else tMatchResult.setText("Defeat");
             long createDate = matchCursor.getLong(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME));
-            tMatchCreateDate.setText(new SimpleDateFormat("HH:mm:ss, dd/MM/yy").format(new Date(createDate)));
+            tMatchCreateDate.setText(new SimpleDateFormat("HH:mm, dd/MM/yy").format(new Date(createDate)));
             int duration = matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION));
             tSummonerDuration.setText(duration / 60 + "mins, " + duration % 60 + "secs ");
             loadItemIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ITEM_1)), ivItem1);
@@ -144,141 +141,42 @@ public class MatchHistory {
             loadItemIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ITEM_4)), ivItem4);
             loadItemIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ITEM_5)), ivItem5);
             loadItemIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ITEM_6)), ivItem6);
+            loadItemIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_ITEM_7)), ivItem7);
             loadSummonerSpellIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_SPELL_1)), ivSpell1);
             loadSummonerSpellIcon(matchCursor.getInt(matchCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_SPELL_2)), ivSpell2);
         }
 
-        private void loadSummonerSpellIcon(int iconId, ImageView view) {
-            if (iconId != 0) {
-                File dir = context.getFilesDir();
-                File newFile = new File(dir, "/summonerspells/icons/" + iconId + ".png");
-                try {
-                    if (newFile.isFile()) {
-                        Bitmap b = BitmapFactory.decodeStream(new FileInputStream(newFile));
-                        view.setImageBitmap(b);
-                    } else {
-                        new RiotAPIPuller(context).downloadSummonerSpellIcon(iconId, view);
-                    }
-                } catch (IOException e) {
-                    Log.e("MatchHistory", "IOException while loading summoner spell icon");
-                }
-            }
-        }
-
         private void loadChampionImage(String champName, ImageView championImage) {
-            champName = nameForUrl(champName);
-            File dir = context.getFilesDir();
-            File newFile = new File(dir,"/champions/icons/" + champName +".png");
-            try {
-                if (newFile.isFile()) {
-                    Bitmap b = BitmapFactory.decodeStream(new FileInputStream(newFile));
-                    championImage.setImageBitmap(b);
-                } else {
-                    new DownloadChampionImage(championImage, champName).execute();
-                }
-            } catch (IOException e ) {
-                Log.e("MatchHistory","IOException while loading championImage");
-            }
+            Picasso p = Picasso.with(context);
+            //p.setIndicatorsEnabled(true);
+            p.load("http://ddragon.leagueoflegends.com/cdn/5.18.1/img/champion/" + nameForUrl(champName) + ".png").into(championImage);
         }
 
         private void loadItemIcon(int iconId, ImageView view) {
-            if (iconId != 0) {
-                File dir = context.getFilesDir();
-                File newFile = new File(dir, "/items/icons/" + iconId + ".png");
-                try {
-                    if (newFile.isFile()) {
-                        Bitmap b = BitmapFactory.decodeStream(new FileInputStream(newFile));
-                        view.setImageBitmap(b);
-                    } else {
-                        new DownloadItemIcon(view, iconId).execute();
-                    }
-                } catch (IOException e) {
-                    Log.e("MatchHistory", "IOException while loading championImage");
-                }
-            }
+            Picasso p = Picasso.with(context);
+            //p.setIndicatorsEnabled(true);
+            p.load("http://ddragon.leagueoflegends.com/cdn/5.19.1/img/item/" + iconId + ".png").
+                    placeholder(context.getDrawable(R.drawable.item_placeholder)).into(view);
         }
 
-        private class DownloadItemIcon extends AsyncTask<Void,Void,Void> {
-
-            private ImageView view;
-            private int id;
-            private Bitmap bmp;
-
-            private DownloadItemIcon(ImageView view, int id) {
-                this.view = view;
-                this.id = id;
-            }
-
-            @Override
-            protected Void doInBackground(Void... urls) {
-                // params comes from the execute() call: params[0] is the url.
-                try {
-                    URL url = new URL("http://ddragon.leagueoflegends.com/cdn/5.19.1/img/item/"+ id +".png");
-                    bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                    File file = context.getFilesDir();
-                    file = new File(file.getPath() + "/items/icons/");
-                    file.mkdirs();
-                    file = new File(file.getPath() + "/" + id + ".png");
-                    FileOutputStream fos = new FileOutputStream(file);
-                    //FileOutputStream fos = context.openFileOutput("/champions/icons/" + name + ".png", Context.MODE_PRIVATE);
-                    bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                    Log.d("MatchHistory", "Downloading item icon for " + id);
-                    fos.flush();
-                    fos.close();
-                } catch (IOException e) {
-                    Log.e("IOException", e.getLocalizedMessage() + ", icon with id " + id);
-                }
-                return null;
-            }
-            // onPostExecute displays the results of the AsyncTask.
-            @Override
-            protected void onPostExecute(Void v) {
-                loadItemIcon(id, view);
-            }
-        }
-
-        private class DownloadChampionImage extends AsyncTask<Void,Void,Void> {
-
-            private ImageView view;
-            private String name;
-            private Bitmap bmp;
-
-            private DownloadChampionImage(ImageView view, String name) {
-                this.view = view;
-                this.name = name;
-            }
-
-            @Override
-            protected Void doInBackground(Void... urls) {
-                // params comes from the execute() call: params[0] is the url.
-                try {
-                    URL url = new URL("http://ddragon.leagueoflegends.com/cdn/5.18.1/img/champion/"+ name +".png");
-                    bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                    File file = context.getFilesDir();
-                    file = new File(file.getPath() + "/champions/icons/");
-                    file.mkdirs();
-                    file = new File(file.getPath() + "/" + name + ".png");
-                    FileOutputStream fos = new FileOutputStream(file);
-                    //FileOutputStream fos = context.openFileOutput("/champions/icons/" + name + ".png", Context.MODE_PRIVATE);
-                    bmp.compress(Bitmap.CompressFormat.PNG, 100, fos);
-                    Log.d("MatchHistory", "Downloading champion icon for " + name);
-                    fos.flush();
-                    fos.close();
-                } catch (IOException e) {
-                    Log.e("IOException", e.getLocalizedMessage() + ", champion with name " + name);
-                }
-                return null;
-            }
-            // onPostExecute displays the results of the AsyncTask.
-            @Override
-            protected void onPostExecute(Void v) {
-                view.setImageBitmap(bmp);
-            }
-        }
 
         private String nameForUrl(String name) {
             return name.replaceAll("[^A-Za-z]","");
         }
 
+    }
+
+    private void loadSummonerSpellIcon(int iconId, ImageView view) {
+        SummonerSpellFetcherDbHelper mDbHelper = new SummonerSpellFetcherDbHelper(context);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT * FROM " + SummonerSpellDB.SummonerSpellEntry.TABLE_NAME + " WHERE " + SummonerSpellDB.SummonerSpellEntry.COLUMN_NAME_SPELL_ID + "=" + iconId, null);
+        if (c.getCount() == 0) {
+            new RiotAPIPuller(context).downloadSummonerSpellIcon(iconId,this);
+        } else {
+            c.moveToFirst();
+            String spellName = c.getString(c.getColumnIndex(SummonerSpellDB.SummonerSpellEntry.COLUMN_NAME_NAME));
+            Picasso.with(context).load("http://ddragon.leagueoflegends.com/cdn/5.19.1/img/spell/" + spellName).into(view);
+        }
+        db.close();
     }
 }

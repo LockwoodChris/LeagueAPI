@@ -50,20 +50,18 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:id="@+id/matchSummonerScore"/>
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:id="@+id/matchSummonerGold"
-                    android:layout_below="@id/matchSummonerScore"/>
-
+                    android:layout_below="@id/matchSummonerScore"
+                    android:id="@+id/matchSummonerGold"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:id="@+id/matchSummonerCreeps"
-                    android:layout_below="@id/matchSummonerGold"/>
+                    android:layout_below="@id/matchSummonerGold"
+                    android:id="@+id/matchSummonerCreeps"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -92,20 +90,20 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/matchItemRow1">
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem1"
                     android:layout_weight="1"
                     />
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem2"
                     android:layout_weight="1"
                     />
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem3"
                     android:layout_weight="1"
                     />
@@ -115,24 +113,30 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/matchItemRow1">
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem4"
                     android:layout_weight="1"
                     />
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem5"
                     android:layout_weight="1"
                     />
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem6"
                     android:layout_weight="1"
                     />
             </LinearLayout>
+            <ImageView
+                android:layout_height="64px"
+                android:layout_width="64px"
+                android:id="@+id/matchSummonerItem7"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/matchItemRow1"/>
         </RelativeLayout>
     </LinearLayout>
     <LinearLayout

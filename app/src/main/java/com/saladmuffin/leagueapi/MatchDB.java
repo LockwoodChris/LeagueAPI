@@ -37,6 +37,7 @@ public class MatchDB {
         public static final String COLUMN_NAME_ITEM_4 = "matchItem4";
         public static final String COLUMN_NAME_ITEM_5 = "matchItem5";
         public static final String COLUMN_NAME_ITEM_6 = "matchItem6";
+        public static final String COLUMN_NAME_ITEM_7 = "matchItem7";
     }
 
 
@@ -69,6 +70,7 @@ public class MatchDB {
                     MatchEntry.COLUMN_NAME_ITEM_4 + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_ITEM_5 + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_ITEM_6 + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_ITEM_7 + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE +
                     " )";
 

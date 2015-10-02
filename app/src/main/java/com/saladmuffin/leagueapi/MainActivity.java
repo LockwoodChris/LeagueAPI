@@ -22,8 +22,6 @@ import java.util.ArrayList;
 
 /*
 TODO:
- - Image disk cache? Content Provider?
- - Fix multiple download tasks
  - Turn summonerStats into fragment and create tabbed view
  - View match details class
  - add different stats
@@ -76,53 +74,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("MY_ERRORS", "in onStop");
-        /*
-        try {
-            FileOutputStream outputStream = openFileOutput("tempstorage", Context.MODE_PRIVATE);
-            for (int i = 0; i < summonerNames.size(); i++) {
-                outputStream.write((summonerNames.get(i) + "\n").getBytes());
-                Log.d("MY_ERRORS", "writing " + summonerNames.get(i));
-            }
-            outputStream.close();
-        } catch (FileNotFoundException e) {
-            Log.d("MY_ERRORS", "could not open file in onPause");
-        } catch (IOException e) {
-            Log.d("MY_ERRORS", "IOException in onPause");
-        }
-        */
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("MY_ERRORS", "in onResume");
         getSummoners();
-        /*
-        String pathName = "/data/user/0/com.saladmuffin.leagueapi/files/tempstorage";
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(pathName));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                summonerNames.add(line);
-                Log.d("MY_ERRORS", "reading " + line);
-            }
-            adapter.notifyDataSetChanged();
-            br.close();
-
-        } catch (FileNotFoundException e) {
-            Log.d("MY_ERRORS", "could not open file in onResume");
-        } catch (IOException e) {
-            Log.d("MY_ERRORS", "IOException in onResume");
-        }
-        */
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d("MY_ERRORS", "ON DESTROY CALLED");
     }
 
 
@@ -135,8 +97,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openSummonerStatistics(String name) {
-        RiotAPIPuller api = new RiotAPIPuller(this);
-        api.getSummonerInfo(name);
         Intent intent = new Intent(this, SummonerStatisticsActivity.class);
         intent.putExtra(SUMMONER_NAME, name);
         startActivity(intent);
@@ -169,25 +129,13 @@ public class MainActivity extends AppCompatActivity {
                 null,                                     // don't filter by row groups
                 sortOrder                                 // The sort order
         );
-
-        boolean isNext = c.moveToFirst();
-        String name = "";
-        Log.d("MY_ERRORS", "currId in getSummoners");
-        while (isNext) {
-            int id = c.getColumnIndex(SummonerDB.SummonerEntry.COLUMN_NAME_NAME);
-            if (id != -1) {
-                name = c.getString(id);
-                summonerNames.add(name);
-            }
-            Log.d("MY_ERRORS", "adding " + name);
-            isNext = c.moveToNext();
-        }
+        Log.d("SummonerDB", "getting Summoners");
         db.close();
         adapter.notifyDataSetChanged();
     }
 
     private void clearSummonerDatabase() {
-        Log.d("MY_ERRORS", "clearing Summoner Database");
+        Log.d("SummonderDB", "clearing Summoner Database");
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.delete(SummonerDB.SummonerEntry.TABLE_NAME, null, null);
         db.close();

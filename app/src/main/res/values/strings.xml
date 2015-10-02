@@ -7,4 +7,6 @@
     <string name="title_activity_summoner_statistics">SummonerStatistics</string>
 
     <string name="hello_world">Hello world!</string>
+
+    <string name="summoner_spell_key">com.saladmuffin.leagueapi.SUMMONER_SPELL_KEY</string>
 </resources>

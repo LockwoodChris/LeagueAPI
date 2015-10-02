@@ -13,8 +13,6 @@ import android.widget.TextView;
 
 public class SummonerStatisticsActivity extends AppCompatActivity {
 
-    private TextView summonerNameView;
-    private TextView showJSONView;
     private String name;
     private RiotAPIPuller api;
     private SummonerFetcherDbHelper mDbHelper;
@@ -29,13 +27,14 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         name = intent.getStringExtra(MainActivity.SUMMONER_NAME);
         api = new RiotAPIPuller(this);
-        currId = getSummonerId(name);
         setTitle(name);
+        currId = getSummonerId(name);
         setContentView(R.layout.activity_summoner_statistics);
-        matchHistory = new MatchHistory(currId, this);
         matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
+        matchHistory = new MatchHistory(currId, this, matchHistoryList);
         matchHistory.setAdapter(matchHistoryList);
-        api.getMatchHistory(currId, matchHistory, name);
+        if (currId != -1) api.getMatchHistory(currId, matchHistory, name);
+        else api.getSummonerInfo(name, matchHistoryList);
     }
 
     @Override

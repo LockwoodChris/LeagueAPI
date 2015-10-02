@@ -45,6 +45,7 @@ public class Match {
     private int item4;
     private int item5;
     private int item6;
+    private int item7;
     private boolean win;
     private long createDate;
 
@@ -84,12 +85,13 @@ public class Match {
             if (stats.has("goldEarned")) gold = stats.getInt("goldEarned");
             if (stats.has("minionsKilled")) cs = stats.getInt("minionsKilled");
             if (stats.has("timePlayed")) matchDuration = stats.getInt("timePlayed");
-            if (stats.has("item1")) item1 = stats.getInt("item1");
-            if (stats.has("item2")) item2 = stats.getInt("item2");
-            if (stats.has("item3")) item3 = stats.getInt("item3");
-            if (stats.has("item4")) item4 = stats.getInt("item4");
-            if (stats.has("item5")) item5 = stats.getInt("item5");
-            if (stats.has("item6")) item6 = stats.getInt("item6");
+            if (stats.has("item0")) item1 = stats.getInt("item0");
+            if (stats.has("item1")) item2 = stats.getInt("item1");
+            if (stats.has("item2")) item3 = stats.getInt("item2");
+            if (stats.has("item3")) item4 = stats.getInt("item3");
+            if (stats.has("item4")) item5 = stats.getInt("item4");
+            if (stats.has("item5")) item6 = stats.getInt("item5");
+            if (stats.has("item6")) item7 = stats.getInt("item6");
             if (stats.has("win")) win = stats.getBoolean("win");
             summonerScore = "" + kills +"/"+ deaths +"/"+ assists ;
         } catch (JSONException e) {
@@ -134,6 +136,7 @@ public class Match {
             values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_4, item4);
             values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_5, item5);
             values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_6, item6);
+            values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_7, item7);
 
             // Insert the new row, returning the primary key value of the new row
             long newRowId;
@@ -173,8 +176,8 @@ public class Match {
             Log.d("MatchDB", "updated Match at row " + newRowId + ", for summoner " + summonerName + "(" + summonerId + ")");
         }
         */
-        adapter.notifyDataSetChanged();
         db.close();
+        adapter.notifyDataSetChanged();
     }
 
 }
