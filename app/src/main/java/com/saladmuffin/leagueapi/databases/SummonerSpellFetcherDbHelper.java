@@ -1,4 +1,4 @@
-package com.saladmuffin.leagueapi;
+package com.saladmuffin.leagueapi.databases;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

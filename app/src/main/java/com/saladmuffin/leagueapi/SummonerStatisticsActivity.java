@@ -9,15 +9,19 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
-import android.widget.TextView;
+
+import com.saladmuffin.leagueapi.databases.MatchDB;
+import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
+import com.saladmuffin.leagueapi.databases.SummonerDB;
+import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
+import com.saladmuffin.leagueapi.util.Downloader;
+import com.saladmuffin.leagueapi.util.MatchHistoryAdapter;
 
 public class SummonerStatisticsActivity extends AppCompatActivity {
 
     private String name;
-    private RiotAPIPuller api;
     private SummonerFetcherDbHelper mDbHelper;
     private int currId;
-    private MatchHistory matchHistory;
     private ListView matchHistoryList;
 
     @Override
@@ -26,15 +30,12 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
         mDbHelper = new SummonerFetcherDbHelper(this);
         Intent intent = getIntent();
         name = intent.getStringExtra(MainActivity.SUMMONER_NAME);
-        api = new RiotAPIPuller(this);
         setTitle(name);
         currId = getSummonerId(name);
         setContentView(R.layout.activity_summoner_statistics);
         matchHistoryList = (ListView) findViewById(R.id.matchHistoryList);
-        matchHistory = new MatchHistory(currId, this, matchHistoryList);
-        matchHistory.setAdapter(matchHistoryList);
-        if (currId != -1) api.getMatchHistory(currId, matchHistory, name);
-        else api.getSummonerInfo(name, matchHistoryList);
+        if (currId != -1) Downloader.getInstance(this).getMatchHistory(name, currId, matchHistoryList);
+        else Downloader.getInstance(this).getSummonerInfo(name,matchHistoryList);;
     }
 
     @Override
@@ -101,12 +102,12 @@ public class SummonerStatisticsActivity extends AppCompatActivity {
     }
 
     private void clearMatchDatabase() {
-        Log.d("MY_ERRORS", "clearing Match Database");
+        Log.d("MatchDB_CLEARING", "clearing Match Database");
         MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(this);
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.delete(MatchDB.MatchEntry.TABLE_NAME, null, null);
         db.close();
-        matchHistory.getAdapter().notifyDataSetChanged();
+        ((MatchHistoryAdapter)matchHistoryList.getAdapter()).notifyDataSetChanged();
     }
 
 

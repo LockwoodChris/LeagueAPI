@@ -1,4 +1,4 @@
-package com.saladmuffin.leagueapi;
+package com.saladmuffin.leagueapi.databases;
 
 import android.provider.BaseColumns;
 

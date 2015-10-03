@@ -18,8 +18,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-
+import com.saladmuffin.leagueapi.databases.SummonerDB;
+import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 /*
 TODO:
  - Turn summonerStats into fragment and create tabbed view
@@ -32,14 +32,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String SUMMONER_NAME = "com.saladmuffin.leagueapi.SUMMONER_NAME";
 
     private EditText summonerNameView;
-    private ArrayList<String> summonerNames;
     private SummonerListCursorAdapter adapter;
     private SummonerFetcherDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        summonerNames = new ArrayList<String>();
         mDbHelper = new SummonerFetcherDbHelper(this);
         setContentView(R.layout.activity_main);
         initialiseSummonerList();
