@@ -66,7 +66,7 @@ public class MatchHistoryAdapter extends CursorAdapter {
 
         ChampionFetcherDbHelper mDbHelper = new ChampionFetcherDbHelper(context);
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor championCursor = db.rawQuery("SELECT * FROM " + ChampionDB.ChampionEntry.TABLE_NAME + " WHERE " + ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_ID + "='" + champId + "'", null);
+        Cursor championCursor = db.rawQuery(ChampionDB.queryChampionById(champId), null);
         if (championCursor.getCount() == 0) {
             Downloader.getInstance(context).getChampionInfo(champId, this);
         } else if (championCursor != null && championCursor.getCount()>0){
@@ -125,7 +125,7 @@ public class MatchHistoryAdapter extends CursorAdapter {
     private void loadSummonerSpellIcon(int iconId, ImageView view) {
         SummonerSpellFetcherDbHelper mDbHelper = new SummonerSpellFetcherDbHelper(context);
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM " + SummonerSpellDB.SummonerSpellEntry.TABLE_NAME + " WHERE " + SummonerSpellDB.SummonerSpellEntry.COLUMN_NAME_SPELL_ID + "=" + iconId, null);
+        Cursor c = db.rawQuery(SummonerSpellDB.querySumSpellById(iconId), null);
         if (c.getCount() == 0) {
             Downloader.getInstance(context).getSummonerSpellInfo(iconId, this);
         } else {

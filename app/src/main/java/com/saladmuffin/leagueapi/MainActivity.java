@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initialiseSummonerList() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor sumListCursor = db.rawQuery("SELECT   *  from " + SummonerDB.SummonerEntry.TABLE_NAME, null);
+        Cursor sumListCursor = db.rawQuery(SummonerDB.queryAllSummoners(), null);
         adapter = new SummonerListCursorAdapter(this, sumListCursor);
         ListView listView = (ListView) findViewById(R.id.summonerList);
         listView.setAdapter(adapter);

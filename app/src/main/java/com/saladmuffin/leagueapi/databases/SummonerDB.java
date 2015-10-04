@@ -29,4 +29,13 @@ public final class SummonerDB {
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + SummonerEntry.TABLE_NAME;
 
+    public static String querySummonerByName(String name) {
+        return "SELECT * FROM " + SummonerEntry.TABLE_NAME + " WHERE "
+                + SummonerEntry.COLUMN_NAME_NAME + "='" + name + "'";
+    }
+
+    public static String queryAllSummoners() {
+        return "SELECT   *  from " + SummonerDB.SummonerEntry.TABLE_NAME;
+    }
+
 }

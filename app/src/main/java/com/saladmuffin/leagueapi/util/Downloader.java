@@ -87,15 +87,14 @@ public class Downloader {
         Downloader.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
 
-
-    public void addSummoner(String name, Integer id, ListView matchHistoryList) {
+    private void addSummoner(String name, Integer id, ListView matchHistoryList) {
 
         SummonerFetcherDbHelper mDbHelper = new SummonerFetcherDbHelper(context);
 
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        Cursor mCursor = db.rawQuery("SELECT * FROM " + SummonerDB.SummonerEntry.TABLE_NAME + " WHERE   " + SummonerDB.SummonerEntry.COLUMN_NAME_NAME + "='" + name + "'", null);
+        Cursor mCursor = db.rawQuery(SummonerDB.querySummonerByName(name), null);
 
         if (mCursor.getCount() == 0) {
             // Create a new map of values, where column names are the keys
@@ -137,7 +136,7 @@ public class Downloader {
                 }
                 MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
                 SQLiteDatabase db = mDbHelper.getReadableDatabase();
-                Cursor matchCursor = db.rawQuery("SELECT * FROM " + MatchDB.MatchEntry.TABLE_NAME + " WHERE summonerId=" + summonerId, null);
+                Cursor matchCursor = db.rawQuery(MatchDB.queryMatchesBySummonerId(summonerId), null);
                 MatchHistoryAdapter adapter = new MatchHistoryAdapter(context, matchCursor);
                 matchHistoryList.setAdapter(adapter);
                 db.close();
@@ -165,7 +164,7 @@ public class Downloader {
         // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        Cursor mCursor = db.rawQuery("SELECT * FROM " + MatchDB.MatchEntry.TABLE_NAME + " WHERE   " + MatchDB.MatchEntry.COLUMN_NAME_MATCH_ID + "='" + matchId + "'", null);
+        Cursor mCursor = db.rawQuery(MatchDB.queryMatchById(matchId), null);
 
         if (mCursor.getCount() == 0) {
             // Create a new map of values, where column names are the keys
@@ -238,7 +237,7 @@ public class Downloader {
                 try {
                     SummonerSpellFetcherDbHelper mDbHelper = new SummonerSpellFetcherDbHelper(context);
                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                    Cursor mCursor = db.rawQuery("SELECT * FROM " + SummonerSpellDB.SummonerSpellEntry.TABLE_NAME + " WHERE   " + SummonerSpellDB.SummonerSpellEntry.COLUMN_NAME_SPELL_ID + "=" + id, null);
+                    Cursor mCursor = db.rawQuery(SummonerSpellDB.querySumSpellById(id), null);
 
                     if (mCursor.getCount() == 0) {
                         String imageName = response.getJSONObject("image").getString("full");
@@ -285,7 +284,7 @@ public class Downloader {
                 try {
                     ChampionFetcherDbHelper mDbHelper = new ChampionFetcherDbHelper(context);
                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
-                    Cursor mCursor = db.rawQuery("SELECT * FROM " + ChampionDB.ChampionEntry.TABLE_NAME + " WHERE   " + ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_ID + "=" + id, null);
+                    Cursor mCursor = db.rawQuery(ChampionDB.queryChampionById(id), null);
 
                     if (mCursor.getCount() == 0) {
                         // Create a new map of values, where column names are the keys

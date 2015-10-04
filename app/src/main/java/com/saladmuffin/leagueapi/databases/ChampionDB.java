@@ -28,4 +28,9 @@ public class ChampionDB {
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + ChampionEntry.TABLE_NAME;
+
+    public static String queryChampionById(int id) {
+        return "SELECT * FROM " + ChampionEntry.TABLE_NAME + " WHERE "
+                + ChampionEntry.COLUMN_NAME_CHAMPION_ID + "=" + id;
+    }
 }
