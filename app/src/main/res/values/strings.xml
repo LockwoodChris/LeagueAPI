@@ -9,4 +9,7 @@
     <string name="hello_world">Hello world!</string>
 
     <string name="summoner_spell_key">com.saladmuffin.leagueapi.SUMMONER_SPELL_KEY</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
