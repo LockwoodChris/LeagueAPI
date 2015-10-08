@@ -1,39 +1,27 @@
 package com.saladmuffin.leagueapi;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
 
-import com.saladmuffin.leagueapi.databases.MatchDB;
-import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
-import com.saladmuffin.leagueapi.databases.SummonerDB;
-import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
-import com.saladmuffin.leagueapi.util.MatchHistoryAdapter;
 import com.saladmuffin.leagueapi.util.MatchListFragmentPageAdapter;
 
 public class SummonerStatisticsActivity extends FragmentActivity {
-
-    private String name;
-    private SummonerFetcherDbHelper mDbHelper;
-    private int currId;
-    private ListView matchHistoryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_summoner_statistics);
 
+        String name = getIntent().getStringExtra(MainActivity.SUMMONER_NAME);
+        setTitle(name);
+
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
         viewPager.setAdapter(new MatchListFragmentPageAdapter(
-                getSupportFragmentManager(), SummonerStatisticsActivity.this,
-                getIntent().getStringExtra(MainActivity.SUMMONER_NAME)));
+                getSupportFragmentManager(), SummonerStatisticsActivity.this, name));
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);

@@ -1,9 +1,12 @@
 package com.saladmuffin.leagueapi.util;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+
+import com.saladmuffin.leagueapi.MainActivity;
 
 /**
  * Created by SaladMuffin on 05/10/2015.
@@ -11,7 +14,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 public class MatchListFragmentPageAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 3;
     private String name;
-    private String tabTitles[] = new String[] { "Matches", "Ranked", "Other" };
+    private String tabTitles[] = new String[] { "Match History", "Ranked", "Other" };
     private Context context;
 
     public MatchListFragmentPageAdapter(FragmentManager fm, Context context, String name) {
@@ -29,7 +32,11 @@ public class MatchListFragmentPageAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch(position) {
             case 0:
-                return MatchListFragment.newInstance(position, name);
+                Bundle bundle = new Bundle();
+                bundle.putString(MainActivity.SUMMONER_NAME,name);
+                MatchListFragment fragment = MatchListFragment.newInstance(position);
+                fragment.setArguments(bundle);
+                return fragment;
             case 1:
                 return PlaceholderFragment.newInstance("2", "2");
             case 2:

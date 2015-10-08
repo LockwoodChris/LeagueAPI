@@ -1,15 +1,10 @@
 package com.saladmuffin.leagueapi.util;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,39 +18,32 @@ import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link MatchListFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link MatchListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class MatchListFragment extends Fragment {
+public class MatchListFragment extends ListFragment {
 
     private static final String ARG_PAGE = "ARG_PAGE";
-    private static final String SUMMONER_NAME = "SUMMONER_NAME";
-    private int mPage;
+    private static String summonerName;
     private OnFragmentInteractionListener mListener;
     private ListView matchHistoryList;
 
-    public static MatchListFragment newInstance(int position, String name) {
+    public static MatchListFragment newInstance(int position) {
         MatchListFragment fragment = new MatchListFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, position);
-        args.putString(SUMMONER_NAME, name);
         fragment.setArguments(args);
         return fragment;
     }
 
     public MatchListFragment() {
+        if (getArguments() != null) {
+            summonerName = getArguments().getString(MainActivity.SUMMONER_NAME);
+        }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mPage = getArguments().getInt(ARG_PAGE);
+            summonerName = getArguments().getString(MainActivity.SUMMONER_NAME);
         }
     }
 
@@ -63,19 +51,16 @@ public class MatchListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_match_list, container, false);
-        matchHistoryList = (ListView) view.findViewById(R.id.matchHistoryList);
-        String name = getArguments().getString(SUMMONER_NAME);
-        int currId = getSummonerId(name);
-        if (currId != -1) Downloader.getInstance(getActivity()).getMatchHistory(name, currId, matchHistoryList);
-        else Downloader.getInstance(getActivity()).getSummonerInfo(name,matchHistoryList);;
         return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        matchHistoryList = getListView();
+        matchHistoryList.setVisibility(View.VISIBLE);
+        int currId = getSummonerId(summonerName);
+        if (currId != -1) Downloader.getInstance(getActivity()).getMatchHistory(summonerName, currId, matchHistoryList);
+        else Downloader.getInstance(getActivity()).getSummonerInfo(summonerName,matchHistoryList);
     }
 
     @Override
@@ -84,16 +69,20 @@ public class MatchListFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        matchHistoryList.setVisibility(View.GONE);
+        MatchInformationFragment fragment = MatchInformationFragment.newInstance();
+        Bundle args = new Bundle();
+        args.putInt("position",position);
+        args.putLong("id",id);
+        args.putInt("matchHistoryListID",matchHistoryList.getId());
+        fragment.setArguments(args);
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment)
+                .addToBackStack(null).commit();
+    }
+
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);

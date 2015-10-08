@@ -22,7 +22,6 @@ import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 /*
 TODO:
- - Turn summonerStats into fragment and create tabbed view
  - View match details class
  - add different stats
  */
