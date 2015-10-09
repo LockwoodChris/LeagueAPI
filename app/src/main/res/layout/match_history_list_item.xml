@@ -92,6 +92,12 @@
                 <ImageView
                     android:layout_width="64px"
                     android:layout_height="64px"
+                    android:id="@+id/matchSummonerItem0"
+                    android:layout_weight="1"
+                    />
+                <ImageView
+                    android:layout_width="64px"
+                    android:layout_height="64px"
                     android:id="@+id/matchSummonerItem1"
                     android:layout_weight="1"
                     />
@@ -101,17 +107,17 @@
                     android:id="@+id/matchSummonerItem2"
                     android:layout_weight="1"
                     />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/matchItemRow1">
                 <ImageView
                     android:layout_width="64px"
                     android:layout_height="64px"
                     android:id="@+id/matchSummonerItem3"
                     android:layout_weight="1"
                     />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/matchItemRow1">
                 <ImageView
                     android:layout_width="64px"
                     android:layout_height="64px"
@@ -124,17 +130,11 @@
                     android:id="@+id/matchSummonerItem5"
                     android:layout_weight="1"
                     />
-                <ImageView
-                    android:layout_width="64px"
-                    android:layout_height="64px"
-                    android:id="@+id/matchSummonerItem6"
-                    android:layout_weight="1"
-                    />
             </LinearLayout>
             <ImageView
                 android:layout_height="64px"
                 android:layout_width="64px"
-                android:id="@+id/matchSummonerItem7"
+                android:id="@+id/matchSummonerItem6"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/matchItemRow1"/>
         </RelativeLayout>

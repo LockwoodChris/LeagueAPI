@@ -11,33 +11,36 @@ public class MatchDB {
 
     /* Inner class that defines table contents */
     public static abstract class MatchEntry implements BaseColumns {
-        public static final String TABLE_NAME = "summoners";
-        public static final String COLUMN_NAME_SUMMONER_NAME = "name";
-        public static final String COLUMN_NAME_SUMMONER_ID = "summonerId";
+        public static final String TABLE_NAME = "matches";
+        public static final String COLUMN_NAME_MATCH_ID = "matchId";
         public static final String COLUMN_NAME_MATCH_TYPE =  "matchType";
         public static final String COLUMN_NAME_MATCH_MODE = "matchMode";
-        public static final String COLUMN_NAME_MATCH_SUB_TYPE = "matchSubType";
+        public static final String COLUMN_NAME_MATCH_QUEUE_TYPE = "matchQueueType";
         public static final String COLUMN_NAME_MATCH_DURATION = "matchDuration";
         public static final String COLUMN_NAME_MAP_ID = "mapId";
-        public static final String COLUMN_NAME_CHAMPION_ID = "championId";
-        public static final String COLUMN_NAME_TEAM_ID = "teamId";
-        public static final String COLUMN_NAME_SPELL_1 = "spell1Id";
-        public static final String COLUMN_NAME_SPELL_2 = "spell2Id";
-        public static final String COLUMN_NAME_DEATHS = "deaths";
-        public static final String COLUMN_NAME_KILLS = "kills";
-        public static final String COLUMN_NAME_ASSISTS = "assists";
-        public static final String COLUMN_NAME_GOLD = "gold";
-        public static final String COLUMN_NAME_MINIONS = "minions";
-        public static final String COLUMN_NAME_MATCH_ID = "matchId";
-        public static final String COLUMN_NAME_MATCH_RESULT = "matchResult";
         public static final String COLUMN_NAME_MATCH_START_TIME = "matchStartTime";
-        public static final String COLUMN_NAME_ITEM_1 = "matchItem1";
-        public static final String COLUMN_NAME_ITEM_2 = "matchItem2";
-        public static final String COLUMN_NAME_ITEM_3 = "matchItem3";
-        public static final String COLUMN_NAME_ITEM_4 = "matchItem4";
-        public static final String COLUMN_NAME_ITEM_5 = "matchItem5";
-        public static final String COLUMN_NAME_ITEM_6 = "matchItem6";
-        public static final String COLUMN_NAME_ITEM_7 = "matchItem7";
+
+        public static final String COLUMN_NAME_P1_SUMM_ID = "summ_p1";
+        public static final String COLUMN_NAME_P2_SUMM_ID = "summ_p2";
+        public static final String COLUMN_NAME_P3_SUMM_ID = "summ_p3";
+        public static final String COLUMN_NAME_P4_SUMM_ID = "summ_p4";
+        public static final String COLUMN_NAME_P5_SUMM_ID = "summ_p5";
+        public static final String COLUMN_NAME_P6_SUMM_ID = "summ_p6";
+        public static final String COLUMN_NAME_P7_SUMM_ID = "summ_p7";
+        public static final String COLUMN_NAME_P8_SUMM_ID = "summ_p8";
+        public static final String COLUMN_NAME_P9_SUMM_ID = "summ_p9";
+        public static final String COLUMN_NAME_P10_SUMM_ID = "summ_p10";
+
+        public static final String COLUMN_NAME_P1_STAT_ID = "stat_p1";
+        public static final String COLUMN_NAME_P2_STAT_ID = "stat_p2";
+        public static final String COLUMN_NAME_P3_STAT_ID = "stat_p3";
+        public static final String COLUMN_NAME_P4_STAT_ID = "stat_p4";
+        public static final String COLUMN_NAME_P5_STAT_ID = "stat_p5";
+        public static final String COLUMN_NAME_P6_STAT_ID = "stat_p6";
+        public static final String COLUMN_NAME_P7_STAT_ID = "stat_p7";
+        public static final String COLUMN_NAME_P8_STAT_ID = "stat_p8";
+        public static final String COLUMN_NAME_P9_STAT_ID = "stat_p9";
+        public static final String COLUMN_NAME_P10_STAT_ID = "stat_p10";
     }
 
 
@@ -46,32 +49,33 @@ public class MatchDB {
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + MatchEntry.TABLE_NAME + " (" +
                     MatchEntry._ID + " INTEGER PRIMARY KEY," +
-                    MatchEntry.COLUMN_NAME_SUMMONER_NAME + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_SUMMONER_ID + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_TYPE + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_ID + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_MODE + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MATCH_SUB_TYPE + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_MATCH_QUEUE_TYPE + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_DURATION + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MAP_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_CHAMPION_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_TEAM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_SPELL_1 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_SPELL_2 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_DEATHS + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_KILLS + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ASSISTS + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_GOLD + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MATCH_RESULT + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P1_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P2_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P3_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P4_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P5_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P6_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P7_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P8_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P9_SUMM_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P10_SUMM_ID + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_START_TIME + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_1 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_2 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_3 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_4 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_5 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_6 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_ITEM_7 + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MINIONS + TEXT_TYPE +
+                    MatchEntry.COLUMN_NAME_P1_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P2_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P3_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P4_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P5_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P6_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P7_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P8_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P9_STAT_ID + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_P10_STAT_ID + TEXT_TYPE +
                     " )";
 
     public static final String SQL_DELETE_ENTRIES =
@@ -82,9 +86,49 @@ public class MatchDB {
                 + MatchEntry.COLUMN_NAME_MATCH_ID + "='" + matchId + "'";
     }
 
+    public static String queryMatchIdAndSummId(String matchId, int summonerId) {
+        return "SELECT * FROM " + MatchDB.SummonerToMatchEntry.TABLE_NAME +
+                " WHERE matchId ='" + matchId + "' AND summonerId='" + summonerId + "'";
+    }
+
+    public static String getColNameSumId(int i) {
+        return "summ_p" + (i + 1);
+    }
+
+    public static String getColNameStatId(int i) {
+        return "stat_p" + (i + 1);
+    }
+
+    /*
     public static String queryMatchesBySummonerId(int summonerId) {
         return "SELECT * FROM " + MatchEntry.TABLE_NAME + " WHERE "
-        + MatchEntry.COLUMN_NAME_SUMMONER_ID + "=" + summonerId;
+        + MatchEntry + "=" + summonerId;
+    }
+    */
+
+    /* Inner class that defines table contents */
+    public static abstract class SummonerToMatchEntry implements BaseColumns {
+        public static final String TABLE_NAME = "matchToSummoner";
+        public static final String COLUMN_NAME_SUMMONER_ID = "summonerId";
+        public static final String COLUMN_NAME_MATCH_ID = "matchId";
+        public static final String COLUMN_NAME_STATS_ID = "statId";
+    }
+
+
+    public static final String SUMM_SQL_CREATE_ENTRIES =
+            "CREATE TABLE " + SummonerToMatchEntry.TABLE_NAME + " (" +
+                    SummonerToMatchEntry._ID + " INTEGER PRIMARY KEY," +
+                    SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID + TEXT_TYPE + COMMA_SEP +
+                    SummonerToMatchEntry.COLUMN_NAME_MATCH_ID + TEXT_TYPE + COMMA_SEP +
+                    SummonerToMatchEntry.COLUMN_NAME_STATS_ID + TEXT_TYPE +
+                    " )";
+
+    public static final String SUMM_SQL_DELETE_ENTRIES =
+            "DROP TABLE IF EXISTS " + SummonerToMatchEntry.TABLE_NAME;
+
+    public static String queryAllMatchesBySummId(int summonerId) {
+        return "SELECT * FROM " + SummonerToMatchEntry.TABLE_NAME + " WHERE "
+                + SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID + "='" + summonerId + "'";
     }
 
 }

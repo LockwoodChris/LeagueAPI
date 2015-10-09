@@ -18,6 +18,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.games.stats.PlayerStats;
+import com.saladmuffin.leagueapi.databases.MatchDB;
+import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
+import com.saladmuffin.leagueapi.databases.PlayerStatsDB;
+import com.saladmuffin.leagueapi.databases.PlayerStatsFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 /*
@@ -62,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_clear_summoners:
                 clearSummonerDatabase();
+                return true;
+            case R.id.action_clear_matches:
+                clearMatchDatabase();
                 return true;
         }
 
@@ -138,6 +146,19 @@ public class MainActivity extends AppCompatActivity {
         db.close();
         adapter.notifyDataSetChanged();
     }
+
+    private void clearMatchDatabase() {
+        Log.d("MatchDB", "clearing Match Database");
+        SQLiteDatabase db = new MatchFetcherDbHelper(this).getWritableDatabase();
+        db.delete( MatchDB.MatchEntry.TABLE_NAME, null, null);
+        db.delete( MatchDB.SummonerToMatchEntry.TABLE_NAME, null, null);
+        db.close();
+        db = new PlayerStatsFetcherDbHelper(this).getWritableDatabase();
+        db.delete(PlayerStatsDB.PlayerStatsEntry.TABLE_NAME, null, null);
+        db.close();
+        adapter.notifyDataSetChanged();
+    }
+
 
     private void initialiseSummonerList() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();

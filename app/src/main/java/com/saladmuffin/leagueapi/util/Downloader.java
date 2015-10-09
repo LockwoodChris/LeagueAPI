@@ -17,6 +17,10 @@ import com.saladmuffin.leagueapi.databases.ChampionDB;
 import com.saladmuffin.leagueapi.databases.ChampionFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.MatchDB;
 import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
+import com.saladmuffin.leagueapi.databases.MatchToSummonerDB;
+import com.saladmuffin.leagueapi.databases.MatchToSummonerFetcherDbHelper;
+import com.saladmuffin.leagueapi.databases.PlayerStatsDB;
+import com.saladmuffin.leagueapi.databases.PlayerStatsFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerSpellDB;
@@ -111,32 +115,26 @@ public class Downloader {
             Log.d("SummonerDB", "added Summoner at row " + newRowId);
         }
         db.close();
-        getMatchHistory(name, id, matchHistoryList);
+        getMatchHistory(id, matchHistoryList);
     }
 
     private String matchHistoryUrl(Integer summonerId) {
         return "https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/" + summonerId + "/recent?api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
-    public void getMatchHistory(final String summonerName, final int summonerId, final ListView matchHistoryList) {
+    public void getMatchHistory(final int summonerId, final ListView matchHistoryList) {
         String url = matchHistoryUrl(summonerId);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                try {
-                    JSONArray jArray = response.getJSONArray("games");
-                    Log.d("MatchHstory","Parsing " + jArray.length() + " matches");
-                    for (int i = 0; i < jArray.length(); i++) {
-                        Log.d("Match", "Parsing match " + i);
-                        parseMatch(jArray.getJSONObject(i), summonerName, summonerId);
-                    }
-                } catch (JSONException e) {
-                    Log.e("DownloadError", "Summoner Info Parsing + " + e.getLocalizedMessage());
-                }
+                parseMatches(response, summonerId);
                 MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
                 SQLiteDatabase db = mDbHelper.getReadableDatabase();
-                Cursor matchCursor = db.rawQuery(MatchDB.queryMatchesBySummonerId(summonerId), null);
+                String query = "SELECT DISTINCT H.* FROM " + MatchDB.MatchEntry.TABLE_NAME
+                        + " P INNER JOIN " + MatchDB.SummonerToMatchEntry.TABLE_NAME + " H ON (H." +
+                        MatchDB.SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID + "=" + summonerId + ")";
+                Cursor matchCursor = db.rawQuery(query + " ORDER BY " + MatchDB.MatchEntry._ID + " ASC", null);
                 MatchHistoryAdapter adapter = new MatchHistoryAdapter(context, matchCursor);
                 matchHistoryList.setAdapter(adapter);
                 db.close();
@@ -151,77 +149,165 @@ public class Downloader {
         Downloader.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
 
-    private void parseMatch(JSONObject jObject, String summonerName, int summonerId) {
+    private void parseMatches(JSONObject jObject, int summonerId) {
         MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
 
-        String matchId = "";
         try {
-            matchId = jObject.getString("gameId");
+            JSONArray jArray = jObject.getJSONArray("games");
+            Log.d("MatchHstory","Parsing " + jArray.length() + " matches");
+            for (int i = 0; i < jArray.length(); i++) {
+                Log.d("Match", "Parsing match " + i);
+                SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                JSONObject jMatch = jArray.getJSONObject(i);
+                String matchId = jMatch.getString("gameId");
+                int champId = jMatch.getInt("championId");
+                Cursor mCursor = db.rawQuery(MatchDB.queryMatchIdAndSummId(matchId, summonerId), null);
+                if (mCursor.getCount() == 0) {
+                    ContentValues values = new ContentValues();
+
+                    values.put(MatchDB.SummonerToMatchEntry.COLUMN_NAME_MATCH_ID, matchId);
+                    values.put(MatchDB.SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID, summonerId);
+
+                    db.insert(MatchDB.SummonerToMatchEntry.TABLE_NAME,
+                                "null",
+                                values);
+                    db.close();
+                    Log.d("MatchSummDB", "Adding matchId:" + matchId + ", summonerId:" + summonerId);
+                    checkMatch(matchId, summonerId, champId);
+                } else db.close();
+            }
         } catch (JSONException e) {
-            Log.e("MatchDB", "Error parsing JSON +" + e.getLocalizedMessage());
+            Log.e("DownloadError", "Summoner Info Parsing + " + e.getLocalizedMessage());
         }
 
+    }
+
+    private String matchUrl(String matchId) {
+        return "https://euw.api.pvp.net/api/lol/euw/v2.2/match/" + matchId + "?api_key=817c2c76-73f9-4c53-801f-d4e06c88768f";
+    }
+
+    private void parseMatch(final String matchId, final int summonerId, final int champId) {
+        String url = matchUrl(matchId);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
+                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
+                    ContentValues values = new ContentValues();
+
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_ID, matchId);
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_TYPE, response.getString("matchType"));
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE, response.getString("matchMode"));
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_QUEUE_TYPE, response.getString("queueType"));
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION, response.getLong("matchDuration"));
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MAP_ID, response.getInt("mapId"));
+                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME, response.getLong("matchCreation"));
+
+                    JSONArray pIdentities = response.getJSONArray("participantIdentities");
+                    JSONArray participants = response.getJSONArray("participants");
+                    long pullerStatRow = -1;
+                    for (int i = 0; i < pIdentities.length(); i++) {
+                        boolean containsPlayer = pIdentities.getJSONObject(i).has("player");
+                        String summonerName = "";
+                        if (containsPlayer) {
+                            JSONObject player = pIdentities.getJSONObject(i).getJSONObject("player");
+                            values.put(MatchDB.getColNameSumId(i), player.getLong("summonerId"));
+                            summonerName = player.getString("summonerName");
+                        }
+                        long statRow = parsePlayerStats(participants.getJSONObject(i), summonerName);
+                        if (champId == participants.getJSONObject(i).getInt("championId")) pullerStatRow = statRow;
+                        values.put(MatchDB.getColNameStatId(i), statRow);
+                    }
+                    db.insert(MatchDB.MatchEntry.TABLE_NAME,
+                                "null",
+                                values);
+                    db.close();
+                    if (pullerStatRow != -1) {
+                        db = new MatchFetcherDbHelper(context).getWritableDatabase();
+                        Cursor mCursor = db.rawQuery(MatchDB.queryMatchIdAndSummId(matchId, summonerId), null);
+                        if (mCursor.getCount() > 0) {
+                            values = new ContentValues();
+                            values.put(MatchDB.SummonerToMatchEntry.COLUMN_NAME_MATCH_ID, matchId);
+                            values.put(MatchDB.SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID, summonerId);
+                            values.put(MatchDB.SummonerToMatchEntry.COLUMN_NAME_STATS_ID, pullerStatRow);
+                            db.update(MatchDB.SummonerToMatchEntry.TABLE_NAME,
+                                        values,
+                                        "matchId ='" + matchId + "' AND summonerId='" + summonerId + "'",
+                                        null);
+                        }
+                        db.close();
+                    }
+                } catch (JSONException e) {
+                    Log.e("DownloadError","Match Parsing + " + e.getLocalizedMessage());
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Volley",error.getLocalizedMessage());
+            }
+        }
+        );
+        Downloader.getInstance(context).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private long parsePlayerStats(JSONObject response, String playerName) {
+        long statRow = -1;
+        try {
+            PlayerStatsFetcherDbHelper mDbHelper = new PlayerStatsFetcherDbHelper(context);
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+
+
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_CHAMPION_ID, response.getInt("championId"));
+            if (!playerName.equals("")) values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_SUMMONER_NAME, playerName);
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_SPELL_1, response.getInt("spell1Id"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_SPELL_2, response.getInt("spell2Id"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_TEAM_ID, response.getInt("teamId"));
+
+            // PlayerStats
+            response = response.getJSONObject("stats");
+
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_DEATHS, response.getLong("deaths"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_KILLS, response.getLong("kills"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ASSISTS, response.getLong("assists"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_GOLD, response.getLong("goldEarned"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_MINIONS, response.getLong("minionsKilled"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_CHAMPION_LEVEL, response.getLong("champLevel"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_0, response.getLong("item0"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_1, response.getLong("item1"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_2, response.getLong("item2"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_3, response.getLong("item3"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_4, response.getLong("item4"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_5, response.getLong("item5"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_6, response.getLong("item6"));
+
+            statRow = db.insert(PlayerStatsDB.PlayerStatsEntry.TABLE_NAME,
+                                "null",
+                                values);
+
+            db.close();
+        } catch (JSONException e) {
+            Log.e("DownloadError","PlayerStats Parsing + " + e.getLocalizedMessage());
+        }
+        return statRow;
+    }
+
+    private void checkMatch(String matchId, int summonerId, int champId) {
+        MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
+
         // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
         Cursor mCursor = db.rawQuery(MatchDB.queryMatchById(matchId), null);
 
         if (mCursor.getCount() == 0) {
-            // Create a new map of values, where column names are the keys
-            try {
-                ContentValues values = new ContentValues();
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_ID, matchId);
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_SUMMONER_NAME, summonerName);
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_SUMMONER_ID, summonerId);
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_TYPE, jObject.getString("gameType"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_SUB_TYPE, jObject.getString("subType"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE, jObject.getString("gameMode"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MAP_ID, jObject.getInt("mapId"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_CHAMPION_ID, jObject.getInt("championId"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_TEAM_ID, jObject.getInt("teamId"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_SPELL_1, jObject.getInt("spell1"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_SPELL_2, jObject.getInt("spell2"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME, jObject.getLong("createDate"));
-                // getting inner JSON object
-                jObject = jObject.getJSONObject("stats");
-                if (jObject.has("numDeaths"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_DEATHS, jObject.getInt("numDeaths"));
-                if (jObject.has("championsKilled"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_KILLS, jObject.getInt("championsKilled"));
-                if (jObject.has("assists"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ASSISTS, jObject.getInt("assists"));
-                if (jObject.has("minionsKilled"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_MINIONS, jObject.getInt("minionsKilled"));
-                if (jObject.has("item0"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_1, jObject.getInt("item0"));
-                if (jObject.has("item1"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_2, jObject.getInt("item1"));
-                if (jObject.has("item2"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_3, jObject.getInt("item2"));
-                if (jObject.has("item3"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_4, jObject.getInt("item3"));
-                if (jObject.has("item4"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_5, jObject.getInt("item4"));
-                if (jObject.has("item5"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_6, jObject.getInt("item5"));
-                if (jObject.has("item6"))
-                    values.put(MatchDB.MatchEntry.COLUMN_NAME_ITEM_7, jObject.getInt("item6"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_GOLD, jObject.getInt("goldEarned"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_RESULT, jObject.getBoolean("win"));
-                values.put(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION, jObject.getInt("timePlayed"));
-
-                // Insert the new row, returning the primary key value of the new row
-                long newRowId;
-                newRowId = db.insert(
-                        MatchDB.MatchEntry.TABLE_NAME,
-                        "null",
-                        values);
-                Log.d("MatchDB", "added Match at row " + newRowId + ", for summoner " + summonerName + "(" + summonerId + ")");
-            } catch (JSONException e) {
-                Log.e("MatchDB", "Error parsing JSON +" + e.getLocalizedMessage());
-            }
-        }
-        db.close();
+            db.close();
+            Log.d("MatchDB","Checking matchDB for " + matchId);
+            parseMatch(matchId, summonerId, champId);
+        } else db.close();
     }
 
     private String summonerSpellUrl(int id) {
@@ -271,11 +357,11 @@ public class Downloader {
     }
 
 
-    private String championNameUrl(Integer id) {
+    private String championNameUrl(long id) {
         return "https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/" + id + "?&api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
-    public void getChampionInfo(final int id, final MatchHistoryAdapter adapter) {
+    public void getChampionInfo(final long id, final MatchHistoryAdapter adapter) {
         String url = championNameUrl(id);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, new Response.Listener<JSONObject>() {

@@ -6,6 +6,7 @@ import android.provider.BaseColumns;
  * Created by SaladMuffin on 02/10/2015.
  */
 public class SummonerSpellDB {
+
     public SummonerSpellDB() {}
 
     /* Inner class that defines table contents */

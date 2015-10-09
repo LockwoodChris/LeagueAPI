@@ -59,7 +59,7 @@ public class MatchListFragment extends ListFragment {
         matchHistoryList = getListView();
         matchHistoryList.setVisibility(View.VISIBLE);
         int currId = getSummonerId(summonerName);
-        if (currId != -1) Downloader.getInstance(getActivity()).getMatchHistory(summonerName, currId, matchHistoryList);
+        if (currId != -1) Downloader.getInstance(getActivity()).getMatchHistory(currId, matchHistoryList);
         else Downloader.getInstance(getActivity()).getSummonerInfo(summonerName,matchHistoryList);
     }
 

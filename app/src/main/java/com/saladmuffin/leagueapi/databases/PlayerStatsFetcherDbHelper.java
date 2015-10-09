@@ -5,25 +5,22 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by SaladMuffin on 28/09/2015.
+ * Created by SaladMuffin on 08/10/2015.
  */
+public class PlayerStatsFetcherDbHelper extends SQLiteOpenHelper {
+    public static final int DATABASE_VERSION = 1;
+    public static final String DATABASE_NAME = "PlayerStats.db";
 
-public class MatchFetcherDbHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 8;
-    public static final String DATABASE_NAME = "Match.db";
-
-    public MatchFetcherDbHelper(Context context) {
+    public PlayerStatsFetcherDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(MatchDB.SQL_CREATE_ENTRIES);
-        db.execSQL(MatchDB.SUMM_SQL_CREATE_ENTRIES);
+        db.execSQL(PlayerStatsDB.SQL_CREATE_ENTRIES);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        db.execSQL(MatchDB.SQL_DELETE_ENTRIES);
-        db.execSQL(MatchDB.SUMM_SQL_DELETE_ENTRIES);
+        db.execSQL(PlayerStatsDB.SQL_DELETE_ENTRIES);
         onCreate(db);
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
