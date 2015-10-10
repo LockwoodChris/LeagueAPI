@@ -92,11 +92,11 @@ public class MatchDB {
     }
 
     public static String getColNameSumId(int i) {
-        return "summ_p" + (i + 1);
+        return "summ_p" + (i );
     }
 
     public static String getColNameStatId(int i) {
-        return "stat_p" + (i + 1);
+        return "stat_p" + (i );
     }
 
     /*

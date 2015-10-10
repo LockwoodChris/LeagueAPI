@@ -63,7 +63,7 @@ public class PlayerStatsDB {
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + PlayerStatsEntry.TABLE_NAME;
 
-    public static String queryByRow(int row) {
+    public static String queryByRow(long row) {
         return "SELECT * FROM " + PlayerStatsEntry.TABLE_NAME + " WHERE "
                 + PlayerStatsEntry._ID + "=" + row;
     }

@@ -27,8 +27,9 @@ import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 /*
 TODO:
- - View match details class
- - add different stats
+ - fix win/defeat bug
+ - sort participants into team in match info
+ - clean up match info
  */
 
 public class MainActivity extends AppCompatActivity {

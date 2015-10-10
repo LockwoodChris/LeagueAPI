@@ -17,8 +17,6 @@ import com.saladmuffin.leagueapi.databases.ChampionDB;
 import com.saladmuffin.leagueapi.databases.ChampionFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.MatchDB;
 import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
-import com.saladmuffin.leagueapi.databases.MatchToSummonerDB;
-import com.saladmuffin.leagueapi.databases.MatchToSummonerFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.PlayerStatsDB;
 import com.saladmuffin.leagueapi.databases.PlayerStatsFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerDB;
@@ -213,12 +211,12 @@ public class Downloader {
                         String summonerName = "";
                         if (containsPlayer) {
                             JSONObject player = pIdentities.getJSONObject(i).getJSONObject("player");
-                            values.put(MatchDB.getColNameSumId(i), player.getLong("summonerId"));
+                            values.put(MatchDB.getColNameSumId(i + 1), player.getLong("summonerId"));
                             summonerName = player.getString("summonerName");
                         }
                         long statRow = parsePlayerStats(participants.getJSONObject(i), summonerName);
                         if (champId == participants.getJSONObject(i).getInt("championId")) pullerStatRow = statRow;
-                        values.put(MatchDB.getColNameStatId(i), statRow);
+                        values.put(MatchDB.getColNameStatId(i + 1), statRow);
                     }
                     db.insert(MatchDB.MatchEntry.TABLE_NAME,
                                 "null",
@@ -283,6 +281,7 @@ public class Downloader {
             values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_4, response.getLong("item4"));
             values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_5, response.getLong("item5"));
             values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_ITEM_6, response.getLong("item6"));
+            values.put(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_WINNER, response.getBoolean("winner"));
 
             statRow = db.insert(PlayerStatsDB.PlayerStatsEntry.TABLE_NAME,
                                 "null",
@@ -388,7 +387,7 @@ public class Downloader {
                         Log.d("ChampionDB", "added " + response.getString("name") + " at row " + newRowId);
                     }
                     db.close();
-                    adapter.notifyDataSetChanged();
+                    if (adapter != null) adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     Log.e("DownloadError", "Summoner Info Parsing + " + e.getLocalizedMessage());
                 }

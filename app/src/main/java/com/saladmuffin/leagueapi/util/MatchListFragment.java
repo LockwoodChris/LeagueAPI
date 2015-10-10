@@ -127,16 +127,4 @@ public class MatchListFragment extends ListFragment {
         db.close();
         return id;
     }
-
-    private void clearMatchDatabase() {
-        Log.d("MatchDB_CLEARING", "clearing Match Database");
-        MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(getActivity());
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.delete(MatchDB.MatchEntry.TABLE_NAME, null, null);
-        db.close();
-        ((MatchHistoryAdapter) matchHistoryList.getAdapter()).notifyDataSetChanged();
-    }
-
-
-
 }

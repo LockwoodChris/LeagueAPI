@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +15,6 @@ import com.saladmuffin.leagueapi.databases.ChampionDB;
 import com.saladmuffin.leagueapi.databases.ChampionFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.MatchDB;
 import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
-import com.saladmuffin.leagueapi.databases.MatchToSummonerDB;
 import com.saladmuffin.leagueapi.databases.PlayerStatsDB;
 import com.saladmuffin.leagueapi.databases.PlayerStatsFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.SummonerSpellDB;
@@ -68,9 +66,8 @@ public class MatchHistoryAdapter extends CursorAdapter {
 
         PlayerStatsFetcherDbHelper statsHelper = new PlayerStatsFetcherDbHelper(context);
         SQLiteDatabase db = statsHelper.getReadableDatabase();
-        Cursor statsCursor = db.rawQuery("SELECT * FROM " + PlayerStatsDB.PlayerStatsEntry.TABLE_NAME +
-                " WHERE " + PlayerStatsDB.PlayerStatsEntry._ID + "=" +
-                matchCursor.getLong(matchCursor.getColumnIndex(MatchDB.SummonerToMatchEntry.COLUMN_NAME_STATS_ID)), null);
+        Cursor statsCursor = db.rawQuery(PlayerStatsDB.queryByRow(matchCursor.getLong(
+                matchCursor.getColumnIndex(MatchDB.SummonerToMatchEntry.COLUMN_NAME_STATS_ID))), null);
         statsCursor.moveToFirst();
         db.close();
 
@@ -83,7 +80,7 @@ public class MatchHistoryAdapter extends CursorAdapter {
             Cursor championCursor = db.rawQuery(ChampionDB.queryChampionById(champId), null);
             if (championCursor.getCount() == 0) {
                 Downloader.getInstance(context).getChampionInfo((int) champId, this);
-            } else if (championCursor != null && championCursor.getCount() > 0) {
+            } else if (championCursor.getCount() > 0) {
                 championCursor.moveToFirst();
                 String champName = championCursor.getString(championCursor.getColumnIndex(ChampionDB.ChampionEntry.COLUMN_NAME_CHAMPION_NAME));
                 tChampionName.setText(champName + ", ");
@@ -107,9 +104,10 @@ public class MatchHistoryAdapter extends CursorAdapter {
             db.close();
             tMatchMode.setText(mCursor.getString(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE)));
             int win = statsCursor.getInt(statsCursor.getColumnIndex(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_WINNER));
-            if (win == 1) tMatchResult.setText("Victory");
+            tMatchResult.setText(""+win);
+            /*if (win == 1) tMatchResult.setText("Victory");
             else tMatchResult.setText("Defeat");
-            long createDate = mCursor.getLong(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME));
+            */long createDate = mCursor.getLong(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME));
             tMatchCreateDate.setText(new SimpleDateFormat("HH:mm, dd/MM/yy").format(new Date(createDate)));
             int duration = mCursor.getInt(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION));
             tSummonerDuration.setText(duration / 60 + "mins, " + duration % 60 + "secs ");
