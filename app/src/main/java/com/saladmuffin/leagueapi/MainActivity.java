@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.gms.games.stats.PlayerStats;
 import com.saladmuffin.leagueapi.databases.MatchDB;
 import com.saladmuffin.leagueapi.databases.MatchFetcherDbHelper;
 import com.saladmuffin.leagueapi.databases.PlayerStatsDB;
@@ -27,9 +26,9 @@ import com.saladmuffin.leagueapi.databases.SummonerDB;
 import com.saladmuffin.leagueapi.databases.SummonerFetcherDbHelper;
 /*
 TODO:
- - fix win/defeat bug
- - sort participants into team in match info
- - clean up match info
+ - redesign participant info bar
+ - finish up match info
+ - ranked
  */
 
 public class MainActivity extends AppCompatActivity {

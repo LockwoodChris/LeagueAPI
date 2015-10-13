@@ -20,17 +20,6 @@ public class MatchDB {
         public static final String COLUMN_NAME_MAP_ID = "mapId";
         public static final String COLUMN_NAME_MATCH_START_TIME = "matchStartTime";
 
-        public static final String COLUMN_NAME_P1_SUMM_ID = "summ_p1";
-        public static final String COLUMN_NAME_P2_SUMM_ID = "summ_p2";
-        public static final String COLUMN_NAME_P3_SUMM_ID = "summ_p3";
-        public static final String COLUMN_NAME_P4_SUMM_ID = "summ_p4";
-        public static final String COLUMN_NAME_P5_SUMM_ID = "summ_p5";
-        public static final String COLUMN_NAME_P6_SUMM_ID = "summ_p6";
-        public static final String COLUMN_NAME_P7_SUMM_ID = "summ_p7";
-        public static final String COLUMN_NAME_P8_SUMM_ID = "summ_p8";
-        public static final String COLUMN_NAME_P9_SUMM_ID = "summ_p9";
-        public static final String COLUMN_NAME_P10_SUMM_ID = "summ_p10";
-
         public static final String COLUMN_NAME_P1_STAT_ID = "stat_p1";
         public static final String COLUMN_NAME_P2_STAT_ID = "stat_p2";
         public static final String COLUMN_NAME_P3_STAT_ID = "stat_p3";
@@ -55,17 +44,7 @@ public class MatchDB {
                     MatchEntry.COLUMN_NAME_MATCH_QUEUE_TYPE + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MATCH_DURATION + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_MAP_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P1_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P2_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P3_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P4_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P5_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P6_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P7_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P8_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P9_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_P10_SUMM_ID + TEXT_TYPE + COMMA_SEP +
-                    MatchEntry.COLUMN_NAME_MATCH_START_TIME + TEXT_TYPE + COMMA_SEP +
+                    MatchEntry.COLUMN_NAME_MATCH_START_TIME + " INT" + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_P1_STAT_ID + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_P2_STAT_ID + TEXT_TYPE + COMMA_SEP +
                     MatchEntry.COLUMN_NAME_P3_STAT_ID + TEXT_TYPE + COMMA_SEP +
@@ -97,6 +76,13 @@ public class MatchDB {
 
     public static String getColNameStatId(int i) {
         return "stat_p" + (i );
+    }
+
+    public static String queryMatchList(int summonerId) {
+        return "SELECT DISTINCT H.* FROM " + MatchDB.MatchEntry.TABLE_NAME
+                + " P INNER JOIN " + MatchDB.SummonerToMatchEntry.TABLE_NAME + " H ON (H." +
+                MatchDB.SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID + "=" + summonerId +
+                ") ORDER BY H." + MatchDB.SummonerToMatchEntry._ID + " ASC";
     }
 
     /*

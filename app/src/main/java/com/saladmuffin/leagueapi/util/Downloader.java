@@ -120,21 +120,19 @@ public class Downloader {
         return "https://euw.api.pvp.net/api/lol/euw/v1.3/game/by-summoner/" + summonerId + "/recent?api_key=fba4693e-ec41-4629-901e-e246d32cfd15";
     }
 
+
     public void getMatchHistory(final int summonerId, final ListView matchHistoryList) {
         String url = matchHistoryUrl(summonerId);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                parseMatches(response, summonerId);
                 MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
                 SQLiteDatabase db = mDbHelper.getReadableDatabase();
-                String query = "SELECT DISTINCT H.* FROM " + MatchDB.MatchEntry.TABLE_NAME
-                        + " P INNER JOIN " + MatchDB.SummonerToMatchEntry.TABLE_NAME + " H ON (H." +
-                        MatchDB.SummonerToMatchEntry.COLUMN_NAME_SUMMONER_ID + "=" + summonerId + ")";
-                Cursor matchCursor = db.rawQuery(query + " ORDER BY " + MatchDB.MatchEntry._ID + " ASC", null);
+                Cursor matchCursor = db.rawQuery(MatchDB.queryMatchList(summonerId), null);
                 MatchHistoryAdapter adapter = new MatchHistoryAdapter(context, matchCursor);
                 matchHistoryList.setAdapter(adapter);
+                parseMatches(response, summonerId, adapter);
                 db.close();
             }
         }, new Response.ErrorListener() {
@@ -147,12 +145,12 @@ public class Downloader {
         Downloader.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
 
-    private void parseMatches(JSONObject jObject, int summonerId) {
+    private void parseMatches(JSONObject jObject, int summonerId, MatchHistoryAdapter adapter) {
         MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
 
         try {
             JSONArray jArray = jObject.getJSONArray("games");
-            Log.d("MatchHstory","Parsing " + jArray.length() + " matches");
+            Log.d("MatchHstory", "Parsing " + jArray.length() + " matches");
             for (int i = 0; i < jArray.length(); i++) {
                 Log.d("Match", "Parsing match " + i);
                 SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -171,7 +169,7 @@ public class Downloader {
                                 values);
                     db.close();
                     Log.d("MatchSummDB", "Adding matchId:" + matchId + ", summonerId:" + summonerId);
-                    checkMatch(matchId, summonerId, champId);
+                    checkMatch(matchId, summonerId, champId, adapter);
                 } else db.close();
             }
         } catch (JSONException e) {
@@ -180,11 +178,20 @@ public class Downloader {
 
     }
 
+    private void notifyMatchAdapter(MatchHistoryAdapter adapter, int summonerId) {
+        Log.d("MatchHistoryAdapter","Notifying adapter");
+        SQLiteDatabase db = new MatchFetcherDbHelper(context).getReadableDatabase();
+        adapter.changeCursor(db.rawQuery(MatchDB.queryMatchList(summonerId), null));
+        adapter.notifyDataSetChanged();
+        db.close();
+    }
+
     private String matchUrl(String matchId) {
         return "https://euw.api.pvp.net/api/lol/euw/v2.2/match/" + matchId + "?api_key=817c2c76-73f9-4c53-801f-d4e06c88768f";
     }
 
-    private void parseMatch(final String matchId, final int summonerId, final int champId) {
+    private void parseMatch(final String matchId, final int summonerId, final int champId,
+                            final MatchHistoryAdapter adapter) {
         String url = matchUrl(matchId);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -237,6 +244,7 @@ public class Downloader {
                         }
                         db.close();
                     }
+                    notifyMatchAdapter(adapter, summonerId);
                 } catch (JSONException e) {
                     Log.e("DownloadError","Match Parsing + " + e.getLocalizedMessage());
                 }
@@ -294,7 +302,7 @@ public class Downloader {
         return statRow;
     }
 
-    private void checkMatch(String matchId, int summonerId, int champId) {
+    private void checkMatch(String matchId, int summonerId, int champId, MatchHistoryAdapter adapter) {
         MatchFetcherDbHelper mDbHelper = new MatchFetcherDbHelper(context);
 
         // Gets the data repository in write mode
@@ -305,7 +313,7 @@ public class Downloader {
         if (mCursor.getCount() == 0) {
             db.close();
             Log.d("MatchDB","Checking matchDB for " + matchId);
-            parseMatch(matchId, summonerId, champId);
+            parseMatch(matchId, summonerId, champId, adapter);
         } else db.close();
     }
 

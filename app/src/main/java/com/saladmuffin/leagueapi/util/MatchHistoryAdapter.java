@@ -104,10 +104,10 @@ public class MatchHistoryAdapter extends CursorAdapter {
             db.close();
             tMatchMode.setText(mCursor.getString(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_MODE)));
             int win = statsCursor.getInt(statsCursor.getColumnIndex(PlayerStatsDB.PlayerStatsEntry.COLUMN_NAME_WINNER));
-            tMatchResult.setText(""+win);
-            /*if (win == 1) tMatchResult.setText("Victory");
+            tMatchResult.setText("" + win);
+            if (win == 1) tMatchResult.setText("Victory");
             else tMatchResult.setText("Defeat");
-            */long createDate = mCursor.getLong(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME));
+            long createDate = mCursor.getLong(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_START_TIME));
             tMatchCreateDate.setText(new SimpleDateFormat("HH:mm, dd/MM/yy").format(new Date(createDate)));
             int duration = mCursor.getInt(mCursor.getColumnIndex(MatchDB.MatchEntry.COLUMN_NAME_MATCH_DURATION));
             tSummonerDuration.setText(duration / 60 + "mins, " + duration % 60 + "secs ");

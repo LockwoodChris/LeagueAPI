@@ -4,8 +4,8 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <ImageView
-        android:layout_width="64px"
-        android:layout_height="64px"
+        android:layout_width="128px"
+        android:layout_height="128px"
         android:src="@drawable/item_placeholder"
         android:id="@+id/match_info_champ_icon"/>
     <TextView

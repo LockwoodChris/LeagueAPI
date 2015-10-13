@@ -12,6 +12,7 @@ public class PlayerStatsDB {
     public static abstract class PlayerStatsEntry implements BaseColumns {
         public static final String TABLE_NAME = "player_stats";
         public static final String COLUMN_NAME_SUMMONER_NAME = "name";
+        public static final String COLUMN_NAME_SUMMONER_ID = "summonerId";
         public static final String COLUMN_NAME_MATCH_ID = "matchId";
         public static final String COLUMN_NAME_CHAMPION_ID = "champId";
         public static final String COLUMN_NAME_SPELL_1 = "spell1";
@@ -39,6 +40,7 @@ public class PlayerStatsDB {
             "CREATE TABLE " + PlayerStatsEntry.TABLE_NAME + " (" +
                     PlayerStatsEntry._ID + " INTEGER PRIMARY KEY," +
                     PlayerStatsEntry.COLUMN_NAME_SUMMONER_NAME + TEXT_TYPE + COMMA_SEP +
+                    PlayerStatsEntry.COLUMN_NAME_SUMMONER_ID + TEXT_TYPE + COMMA_SEP +
                     PlayerStatsEntry.COLUMN_NAME_CHAMPION_ID + TEXT_TYPE + COMMA_SEP +
                     PlayerStatsEntry.COLUMN_NAME_SPELL_1 + TEXT_TYPE + COMMA_SEP +
                     PlayerStatsEntry.COLUMN_NAME_SPELL_2 + TEXT_TYPE + COMMA_SEP +
